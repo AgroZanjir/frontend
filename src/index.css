@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * shadcn's variables, pointed at the panel palette.
+ *
+ * The panels own the design system - it lives in `styles/panels.css` and comes
+ * straight from the approved prototype. These tokens exist so the shadcn
+ * components used by the carried-over auth screens sit in the same product
+ * rather than looking like a second one bolted on: same pine green, same
+ * green-biased neutrals, same two themes. Change a colour there, not here.
+ */
+
+@layer base {
+  :root {
+    --background: 140 14.3% 95.9%;
+    --foreground: 160 26.1% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 160 26.1% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 26.1% 9%;
+    --primary: 157.7 57.4% 26.7%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 144 16.1% 93.9%;
+    --secondary-foreground: 160 26.1% 9%;
+    --muted: 144 16.1% 93.9%;
+    --muted-foreground: 156.7 10.8% 32.5%;
+    --accent: 147.7 28.9% 91.2%;
+    --accent-foreground: 157.4 62.2% 21.8%;
+    --destructive: 4.1 58.4% 39.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 142.5 12.9% 87.8%;
+    --input: 150 11.3% 79.2%;
+    --ring: 157.7 57.4% 26.7%;
+
+    /* The panel radius, in rem: 9px. */
+    --radius: 0.5625rem;
+  }
+
+  .dark {
+    --background: 160 23.1% 5.1%;
+    --foreground: 145.7 18.9% 92.7%;
+    --card: 157.5 18.2% 8.6%;
+    --card-foreground: 145.7 18.9% 92.7%;
+    --popover: 157.5 18.2% 8.6%;
+    --popover-foreground: 145.7 18.9% 92.7%;
+    --primary: 151.7 43.7% 53.3%;
+    --primary-foreground: 160 23.1% 5.1%;
+    --secondary: 156 17.9% 11%;
+    --secondary-foreground: 145.7 18.9% 92.7%;
+    --muted: 156 17.9% 11%;
+    --muted-foreground: 153.8 8.7% 63.9%;
+    --accent: 153.9 37.7% 12%;
+    --accent-foreground: 151.9 48% 60.8%;
+    --destructive: 7.9 63.3% 64.7%;
+    --destructive-foreground: 160 23.1% 5.1%;
+    --border: 155 15% 15.7%;
+    --input: 153.8 14% 22.4%;
+    --ring: 151.7 43.7% 53.3%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}

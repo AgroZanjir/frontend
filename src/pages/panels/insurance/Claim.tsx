@@ -1,0 +1,155 @@
+/**
+ * I2 - one claim.
+ *
+ * A storage claim is settled against the excursion that caused it, so the
+ * event sits on the same page as the amount. The adjuster is not being asked
+ * to trust the claimant's account of what happened - the sensor trace, the
+ * threshold and the affected lot are all here.
+ */
+
+import { useNavigate } from "react-router-dom";
+
+import PanelIcon from "@/components/panel/icons";
+import { Spark } from "@/components/panel/charts";
+import {
+  Btn,
+  KV,
+  PageHead,
+  PanelCard,
+  Pill,
+} from "@/components/panel/primitives";
+import { usePanelT } from "@/lib/panel-format";
+import { usePanelData } from "@/lib/panel-data";
+
+const InsuranceClaim = () => {
+  const { CLAIMS, EXCURSION, findLot } = usePanelData();
+  const { t, nf, money, dur } = usePanelT();
+  const navigate = useNavigate();
+
+  const c = CLAIMS[0];
+  const e = EXCURSION;
+  const l = findLot(c.lot);
+  const contents = ["e_c1", "e_c2", "e_c3", "e_c4", "e_c5"];
+
+  return (
+    <>
+      <PageHead
+        title={
+          <>
+            {t("ic_title")} ·{" "}
+            <span className="mono" style={{ fontSize: 15 }}>
+              {c.c}
+            </span>
+          </>
+        }
+        actions={
+          <Btn
+            cls="btn-p"
+            icon="evid"
+            onClick={() => navigate("/insurance/evidence")}
+          >
+            {t("ic_evidence")}
+          </Btn>
+        }
+      />
+
+      <div
+        className="grid"
+        style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,320px)" }}
+      >
+        <div className="stack">
+          <PanelCard head={t("ic_title")}>
+            <div className="grid g2">
+              <KV
+                rows={[
+                  [t("i_pol"), <span className="mono">{c.pol}</span>],
+                  [t("i_kind"), t(`k_${c.kind}`)],
+                  [t("i_holder"), c.holder],
+                ]}
+              />
+              <KV
+                rows={[
+                  [t("i_amt"), <b>{money(c.amt)}</b>],
+                  [t("i_date"), <span className="mono">{c.date}</span>],
+                  [t("i_st"), <Pill s={c.st} />],
+                ]}
+              />
+            </div>
+          </PanelCard>
+
+          <PanelCard head={t("ic_event")}>
+            <div
+              className="row"
+              style={{ gap: 10, alignItems: "flex-start", marginBottom: 10 }}
+            >
+              <span className="pill p-crit" style={{ padding: 6 }}>
+                <PanelIcon name="exc" />
+              </span>
+              <div>
+                <div className="t-h3">
+                  <span className="mono">{e.c}</span> · {e.zone}
+                </div>
+                <div className="t-xs muted-2" style={{ marginTop: 2 }}>
+                  {e.from} → {e.to} · {dur(e.durMin)}
+                </div>
+              </div>
+            </div>
+
+            <Spark vals={e.trace} color="var(--crit)" thr={e.thr} />
+            <div className="hr" />
+            <KV
+              rows={[
+                [
+                  t("e_peak"),
+                  <b style={{ color: "var(--crit)" }}>{e.peak} °C</b>,
+                ],
+                [t("e_thr"), `${e.thr} °C`],
+                [
+                  t("i_lot"),
+                  <>
+                    <span className="lotid">{l.c}</span> · {nf(l.net)} kg
+                  </>,
+                ],
+              ]}
+            />
+          </PanelCard>
+        </div>
+
+        <div className="stack">
+          <PanelCard head={t("ic_evidence")}>
+            <div className="stack" style={{ gap: 8 }}>
+              {contents.map((k) => (
+                <div
+                  key={k}
+                  className="row"
+                  style={{ gap: 8, alignItems: "flex-start" }}
+                >
+                  <span
+                    style={{ color: "var(--good)", flex: "none", marginTop: 1 }}
+                  >
+                    <PanelIcon name="check" />
+                  </span>
+                  <span className="t-sm">{t(k)}</span>
+                </div>
+              ))}
+            </div>
+          </PanelCard>
+
+          <PanelCard head={t("ic_assess")}>
+            <p className="t-xs muted-2" style={{ margin: "0 0 11px" }}>
+              {t("ic_note")}
+            </p>
+            <div className="row" style={{ gap: 8 }}>
+              <Btn cls="btn-p" icon="check">
+                {t("ic_approve")}
+              </Btn>
+              <Btn cls="btn-q">{t("ic_reject")}</Btn>
+            </div>
+          </PanelCard>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default InsuranceClaim;

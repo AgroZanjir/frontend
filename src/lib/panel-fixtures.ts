@@ -1,0 +1,1384 @@
+/**
+ * The demo dataset, kept as the test double.
+ *
+ * This was the panels' data source until the backend landed. It stays for one
+ * reason: `screens.spec.tsx` renders all forty-four screens without a server,
+ * and a render test that needs a database is a test nobody runs.
+ *
+ * The live dataset is now seeded into the backend by
+ * `manage.py seed_demo` - the same figures, in the database they always
+ * belonged in. If you change one of them, change it there; this file only has
+ * to be *shaped* like the real thing, not equal to it.
+ *
+ * Every figure is illustrative: realistic Uzbek products, regions, farms and
+ * institutions so the client recognises their own operation, and nothing more.
+ * No number is a measured ZEROCO result.
+ */
+
+import type {
+  Arrival,
+  AuditEntry,
+  Cap,
+  Claim,
+  Doc,
+  Excursion,
+  ExportContract,
+  Farm,
+  FinanceApp,
+  Grant,
+  Hub,
+  Lien,
+  Lot,
+  LotEvent,
+  Notif,
+  Org,
+  OrgTypeDef,
+  PlatformUser,
+  Product,
+  ProductCode,
+  QcRecord,
+  RoleGroup,
+  Shipment,
+  TrialDetail,
+  TrialSummary,
+  VCheck,
+  Zone,
+} from "@/lib/panel-types";
+import type { PanelData } from "@/lib/panel-data";
+
+const PRODUCTS: Record<ProductCode, Product> = {
+  melon: {
+    uz: "Qovun",
+    ru: "Дыня",
+    en: "Melon",
+    v: "Torpeda",
+    hs: "0807.19",
+  },
+  grape: {
+    uz: "Uzum",
+    ru: "Виноград",
+    en: "Grape",
+    v: "Husayni",
+    hs: "0806.10",
+  },
+  cherry: {
+    uz: "Olcha",
+    ru: "Черешня",
+    en: "Cherry",
+    v: "Bigarreau",
+    hs: "0809.29",
+  },
+  apricot: {
+    uz: "O‘rik",
+    ru: "Абрикос",
+    en: "Apricot",
+    v: "Subhoni",
+    hs: "0809.10",
+  },
+  tomato: {
+    uz: "Pomidor",
+    ru: "Помидор",
+    en: "Tomato",
+    v: "Bella Rosa",
+    hs: "0702.00",
+  },
+  pom: {
+    uz: "Anor",
+    ru: "Гранат",
+    en: "Pomegranate",
+    v: "Qizil",
+    hs: "0810.90",
+  },
+};
+
+const HUBS: Hub[] = [
+  {
+    code: "HUB-SMQ",
+    name: "Samarqand Hub",
+    region: "Samarqand",
+  },
+  {
+    code: "HUB-FRG",
+    name: "Farg‘ona Hub",
+    region: "Farg‘ona",
+  },
+];
+
+const ZONES: Zone[] = [
+  {
+    c: "Z-ZEROCO-01",
+    m: "zeroco",
+    cap: 20000,
+    used: 14820,
+    t: 0.4,
+    rh: 97.6,
+    tt: 0.5,
+    rt: 98,
+  },
+  {
+    c: "Z-ZEROCO-02",
+    m: "zeroco",
+    cap: 20000,
+    used: 8640,
+    t: 0.6,
+    rh: 97.1,
+    tt: 0.5,
+    rt: 98,
+  },
+  {
+    c: "Z-COLD-01",
+    m: "cold",
+    cap: 50000,
+    used: 41300,
+    t: 4.2,
+    rh: 89,
+    tt: 4,
+    rt: 90,
+  },
+  {
+    c: "Z-COLD-02",
+    m: "cold",
+    cap: 50000,
+    used: 16300,
+    t: 6.9,
+    rh: 84,
+    tt: 4,
+    rt: 90,
+    dev: true,
+  },
+  {
+    c: "Z-PRECOOL",
+    m: "pre",
+    cap: 8000,
+    used: 2100,
+    t: 2.1,
+    rh: 92,
+    tt: 2,
+    rt: 92,
+  },
+  {
+    c: "Z-DRY-01",
+    m: "dry",
+    cap: 30000,
+    used: 9400,
+    t: 16.4,
+    rh: 55,
+    tt: 16,
+    rt: 55,
+  },
+];
+
+const FARMS: Farm[] = [
+  {
+    c: "F-SMQ-014",
+    n: "Nodir dehqon xo‘jaligi",
+    o: "Nodir Sharipov",
+    r: "Samarqand",
+    d: "Payariq",
+    ha: 12.5,
+    certs: ["GlobalGAP"],
+    lots: 34,
+  },
+  {
+    c: "F-SMQ-007",
+    n: "Zarafshon klaster",
+    o: "Zarafshon Agro MChJ",
+    r: "Samarqand",
+    d: "Jomboy",
+    ha: 186,
+    certs: ["GlobalGAP", "Organic"],
+    lots: 212,
+  },
+  {
+    c: "F-SMQ-031",
+    n: "Urgut bog‘lari",
+    o: "Urgut Agro MChJ",
+    r: "Samarqand",
+    d: "Urgut",
+    ha: 64.2,
+    certs: [],
+    lots: 88,
+  },
+];
+
+const LOTS: Lot[] = [
+  {
+    c: "AZ-2026-SMQ-0412",
+    p: "melon",
+    f: 0,
+    net: 4200,
+    g: "A",
+    st: "stored",
+    z: "Z-ZEROCO-01",
+    pos: "B-06",
+    h: "2026-08-14",
+    pl: "2026-08-15",
+    u: "2026-10-06",
+    pledge: true,
+    trial: "zeroco",
+    val: 168000000,
+  },
+  {
+    c: "AZ-2026-SMQ-0411",
+    p: "melon",
+    f: 0,
+    net: 3000,
+    g: "A",
+    st: "stored",
+    z: "Z-COLD-01",
+    pos: "A-06",
+    h: "2026-08-14",
+    pl: "2026-08-15",
+    u: "2026-09-11",
+    pledge: false,
+    trial: "control",
+    val: 120000000,
+  },
+  {
+    c: "AZ-2026-SMQ-0408",
+    p: "grape",
+    f: 1,
+    net: 11400,
+    g: "A",
+    st: "reserved",
+    z: "Z-ZEROCO-01",
+    pos: "C-02",
+    h: "2026-08-10",
+    pl: "2026-08-11",
+    u: "2026-09-24",
+    pledge: true,
+    val: 513000000,
+  },
+  {
+    c: "AZ-2026-SMQ-0396",
+    p: "apricot",
+    f: 2,
+    net: 6250,
+    g: "B",
+    st: "stored",
+    z: "Z-COLD-02",
+    pos: "D-11",
+    h: "2026-08-06",
+    pl: "2026-08-07",
+    u: "2026-09-02",
+    pledge: false,
+    val: 156250000,
+  },
+  {
+    c: "AZ-2026-SMQ-0377",
+    p: "cherry",
+    f: 1,
+    net: 2380,
+    g: "A",
+    st: "stored",
+    z: "Z-ZEROCO-02",
+    pos: "B-03",
+    h: "2026-08-16",
+    pl: "2026-08-16",
+    u: "2026-09-13",
+    pledge: false,
+    val: 190400000,
+  },
+  {
+    c: "AZ-2026-SMQ-0381",
+    p: "tomato",
+    f: 2,
+    net: 8900,
+    g: "A",
+    st: "dispatched",
+    z: null,
+    h: "2026-07-29",
+    pl: "2026-07-30",
+    u: "2026-08-26",
+    pledge: false,
+    val: 133500000,
+  },
+  {
+    c: "AZ-2026-SMQ-0362",
+    p: "grape",
+    f: 1,
+    net: 9800,
+    g: "A",
+    st: "settled",
+    z: null,
+    h: "2026-07-22",
+    pl: "2026-07-23",
+    u: "2026-09-05",
+    pledge: false,
+    val: 441000000,
+  },
+  {
+    c: "AZ-2026-SMQ-0355",
+    p: "apricot",
+    f: 2,
+    net: 4100,
+    g: "C",
+    st: "written_off",
+    z: null,
+    h: "2026-07-18",
+    pl: "2026-07-19",
+    u: "2026-08-14",
+    pledge: false,
+    val: 0,
+  },
+  {
+    c: "AZ-2026-SMQ-0421",
+    p: "pom",
+    f: 1,
+    net: 5600,
+    g: "A",
+    st: "registered",
+    z: null,
+    h: "2026-08-25",
+    pl: null,
+    u: null,
+    pledge: false,
+    val: 224000000,
+  },
+];
+
+const ARRIVALS: Arrival[] = [
+  {
+    t: "07:12",
+    v: "01 A 234 BC",
+    farm: 0,
+    p: "melon",
+    est: 4300,
+    st: "weighing",
+  },
+  {
+    t: "07:40",
+    v: "01 B 887 KA",
+    farm: 1,
+    p: "grape",
+    est: 11500,
+    st: "queued",
+  },
+  {
+    t: "08:05",
+    v: "40 C 119 AB",
+    farm: 2,
+    p: "apricot",
+    est: 6400,
+    st: "queued",
+  },
+  {
+    t: "08:30",
+    v: "01 D 552 MN",
+    farm: 1,
+    p: "cherry",
+    est: 2400,
+    st: "queued",
+  },
+];
+
+/** The append-only event log for the flagship lot. */
+const EVENTS: LotEvent[] = [
+  {
+    t: "registered",
+    at: "2026-08-14 07:42",
+    by: "G. Rasulova",
+    ic: "in",
+    m: "GATE-01 · brutto 4 310 kg · netto 4 200 kg · idempotency 8f2c",
+  },
+  {
+    t: "sampled",
+    at: "2026-08-14 08:10",
+    by: "D. Yusupov",
+    ic: "lab",
+    m: "Brix 12.4 · kalibr 2.1 kg · nuqson 1.8%",
+  },
+  {
+    t: "graded",
+    at: "2026-08-14 08:35",
+    by: "D. Yusupov",
+    ic: "check",
+    acc: true,
+    m: "Grade A · 4 200 kg · 3 foto biriktirildi",
+  },
+  {
+    t: "placed",
+    at: "2026-08-15 06:20",
+    by: "S. Ergashev",
+    ic: "box",
+    acc: true,
+    m: "Z-ZEROCO-01 · B-06 · 0.4 °C / 97.6% RH",
+  },
+  {
+    t: "trial_start",
+    at: "2026-08-15 09:00",
+    by: "D. Yusupov",
+    ic: "flask",
+    acc: true,
+    m: "TR-MELON-01 · ZEROCO qismi · juftlik AZ-2026-SMQ-0411",
+  },
+  {
+    t: "pledged",
+    at: "2026-08-18 14:05",
+    by: "Agrobank ATB",
+    ic: "lock",
+    warn: true,
+    m: "FA-2026-0117 · 168 000 000 UZS · inventory finance",
+  },
+  {
+    t: "inspected",
+    at: "2026-08-22 09:15",
+    by: "D. Yusupov",
+    ic: "lab",
+    m: "7-kun · vazn −0.7% · qattiqlik 8.3 N · nuqsonsiz",
+  },
+  {
+    t: "excursion",
+    at: "2026-08-24 02:40",
+    by: "SENSOR-ZC01-A",
+    ic: "alert",
+    warn: true,
+    m: "Z-ZEROCO-01 · 2.9 °C / 34 daq · chegara 2.5 °C · bartaraf etildi",
+  },
+];
+
+const QC: QcRecord[] = [
+  {
+    s: "intake",
+    d: "2026-08-14",
+    by: "D. Yusupov",
+    brix: 12.4,
+    firm: 8.4,
+    def: 1.8,
+    g: "A",
+  },
+  {
+    s: "pre_storage",
+    d: "2026-08-15",
+    by: "D. Yusupov",
+    brix: 12.4,
+    firm: 8.4,
+    def: 1.8,
+    g: "A",
+  },
+  {
+    s: "in_storage",
+    d: "2026-08-22",
+    by: "D. Yusupov",
+    brix: 12.6,
+    firm: 8.3,
+    def: 1.9,
+    g: "A",
+  },
+];
+
+const TRIAL: TrialDetail = {
+  code: "TR-MELON-01",
+  p: "melon",
+  started: "2026-08-15",
+  hub: "HUB-SMQ",
+  z: {
+    lot: "AZ-2026-SMQ-0412",
+    zone: "Z-ZEROCO-01",
+    qty: 4200,
+  },
+  c: {
+    lot: "AZ-2026-SMQ-0411",
+    zone: "Z-COLD-01",
+    qty: 3000,
+  },
+  days: [0, 7, 14, 21, 28, 35, 42, 49, 56],
+  observed: 2,
+  s: {
+    loss: {
+      c: [0, 1.8, 3.4, 5.1, 7, 9.2, 11.8, 14.9, 18.4],
+      z: [0, 0.7, 1.4, 2.1, 3, 3.9, 4.9, 6, 7.2],
+    },
+    waste: {
+      c: [0, 0.5, 1.4, 2.8, 4.5, 7.1, 10.6, 15.2, 21],
+      z: [0, 0.1, 0.4, 1, 2, 3.1, 4.4, 6, 8.1],
+    },
+    firm: {
+      c: [8.4, 8, 7.5, 6.8, 5.9, 5.1, 4.4, 3.8, 3.2],
+      z: [8.4, 8.3, 8.1, 7.9, 7.6, 7.3, 7, 6.6, 6.2],
+    },
+  },
+};
+
+const TRIALS: TrialSummary[] = [
+  {
+    c: "TR-MELON-01",
+    p: "melon",
+    st: "running",
+    d0: "2026-08-15",
+    day: 11,
+    arms: 2,
+    obs: 6,
+  },
+  {
+    c: "TR-CHERRY-02",
+    p: "cherry",
+    st: "running",
+    d0: "2026-08-17",
+    day: 9,
+    arms: 2,
+    obs: 4,
+  },
+  {
+    c: "TR-GRAPE-03",
+    p: "grape",
+    st: "planned",
+    d0: "2026-09-02",
+    day: 0,
+    arms: 2,
+    obs: 0,
+  },
+  {
+    c: "TR-TOMATO-01",
+    p: "tomato",
+    st: "completed",
+    d0: "2026-06-04",
+    day: 56,
+    arms: 2,
+    obs: 18,
+  },
+];
+
+const FINAPPS: FinanceApp[] = [
+  {
+    c: "FA-2026-0117",
+    app: "Nodir dehqon xo‘jaligi",
+    kind: "inventory",
+    amt: 168000000,
+    cur: "UZS",
+    st: "disbursed",
+    lots: ["AZ-2026-SMQ-0412"],
+    ltv: 62,
+    date: "2026-08-18",
+    lender: "Agrobank ATB",
+  },
+  {
+    c: "FA-2026-0121",
+    app: "Zarafshon Agro MChJ",
+    kind: "inventory",
+    amt: 410000000,
+    cur: "UZS",
+    st: "review",
+    lots: ["AZ-2026-SMQ-0408"],
+    ltv: 68,
+    date: "2026-08-23",
+    lender: "Agrobank ATB",
+  },
+  {
+    c: "FA-2026-0124",
+    app: "Urgut Agro MChJ",
+    kind: "pre_export",
+    amt: 95000000,
+    cur: "UZS",
+    st: "submitted",
+    lots: [],
+    ltv: 0,
+    date: "2026-08-25",
+    lender: "Agrobank ATB",
+  },
+  {
+    c: "FA-2026-0109",
+    app: "Zarafshon Agro MChJ",
+    kind: "pre_export",
+    amt: 640000000,
+    cur: "UZS",
+    st: "repaid",
+    lots: ["AZ-2026-SMQ-0362"],
+    ltv: 55,
+    date: "2026-07-24",
+    lender: "Agrobank ATB",
+  },
+];
+
+const LIENS: Lien[] = [
+  {
+    lot: "AZ-2026-SMQ-0412",
+    fa: "FA-2026-0117",
+    amt: 168000000,
+    since: "2026-08-18",
+    st: "active",
+  },
+  {
+    lot: "AZ-2026-SMQ-0408",
+    fa: "FA-2026-0121",
+    amt: 410000000,
+    since: "2026-08-23",
+    st: "active",
+  },
+  {
+    lot: "AZ-2026-SMQ-0362",
+    fa: "FA-2026-0109",
+    amt: 640000000,
+    since: "2026-07-24",
+    st: "released",
+    rel: "2026-08-12",
+  },
+];
+
+const CLAIMS: Claim[] = [
+  {
+    c: "CL-2026-0043",
+    pol: "POL-ST-2026-044",
+    kind: "storage",
+    lot: "AZ-2026-SMQ-0396",
+    ev: "EXC-2026-0311",
+    amt: 18400000,
+    st: "review",
+    date: "2026-08-24",
+    holder: "Urgut Agro MChJ",
+  },
+  {
+    c: "CL-2026-0041",
+    pol: "POL-CG-2026-018",
+    kind: "cargo",
+    lot: "AZ-2026-SMQ-0381",
+    ev: null,
+    amt: 7200000,
+    st: "approved",
+    date: "2026-08-19",
+    holder: "Jomboy Agro",
+  },
+  {
+    c: "CL-2026-0038",
+    pol: "POL-ST-2026-044",
+    kind: "storage",
+    lot: "AZ-2026-SMQ-0355",
+    ev: "EXC-2026-0288",
+    amt: 41000000,
+    st: "paid",
+    date: "2026-08-02",
+    holder: "Urgut Agro MChJ",
+  },
+];
+
+const EXCURSION: Excursion = {
+  c: "EXC-2026-0311",
+  zone: "Z-COLD-02",
+  metric: "temp",
+  from: "2026-08-24 01:15",
+  to: "2026-08-24 03:27",
+  peak: 6.9,
+  thr: 4,
+  durMin: 132,
+  sev: "critical",
+  lots: ["AZ-2026-SMQ-0396"],
+  sensor: "SENSOR-CD02-B",
+  trace: [4, 4.1, 4.3, 5.2, 6.1, 6.7, 6.9, 6.8, 6.2, 5.4, 4.6, 4.1, 4],
+};
+
+const EXPORTS: ExportContract[] = [
+  {
+    c: "EX-2026-0088",
+    buyer: "Almaty Fresh LLP",
+    country: "KZ",
+    p: "grape",
+    qty: 11400,
+    inc: "CPT",
+    pay: "lc",
+    val: 98400,
+    cur: "USD",
+    st: "in_progress",
+    ship: "SH-2026-0210",
+  },
+  {
+    c: "EX-2026-0084",
+    buyer: "Riga Produce SIA",
+    country: "LV",
+    p: "melon",
+    qty: 22000,
+    inc: "FCA",
+    pay: "cad",
+    val: 41800,
+    cur: "USD",
+    st: "signed",
+    ship: null,
+  },
+  {
+    c: "EX-2026-0079",
+    buyer: "Dubai Gulf Trading",
+    country: "AE",
+    p: "cherry",
+    qty: 2380,
+    inc: "CIP",
+    pay: "advance",
+    val: 23800,
+    cur: "USD",
+    st: "shipped",
+    ship: "SH-2026-0198",
+  },
+];
+
+const SHIPMENT: Shipment = {
+  c: "SH-2026-0210",
+  ex: "EX-2026-0088",
+  carrier: "Uztrans Logistic MChJ",
+  mode: "reefer",
+  veh: "01 K 774 TX / CNTR 4471",
+  set: 2,
+  route: "Samarqand → Almaty",
+  dep: "2026-08-27 06:00",
+  eta: "2026-08-29 18:00",
+  st: "loading",
+  km: 1180,
+  temps: [2.1, 2, 1.9, 2, 2.2, 2.1, 2, 1.9, 2, 2.1],
+  lots: [
+    {
+      c: "AZ-2026-SMQ-0408",
+      qty: 11400,
+    },
+  ],
+};
+
+const DOCS: Doc[] = [
+  {
+    t: "phyto",
+    n: "doc_phyto",
+    st: "issued",
+    exp: "2026-09-10",
+    ref: "PH-2026-44821",
+  },
+  {
+    t: "origin",
+    n: "doc_origin",
+    st: "issued",
+    exp: "2026-11-01",
+    ref: "CO-2026-9930",
+  },
+  {
+    t: "invoice",
+    n: "doc_invoice",
+    st: "issued",
+    exp: null,
+    ref: "INV-0088",
+  },
+  {
+    t: "packing",
+    n: "doc_packing",
+    st: "issued",
+    exp: null,
+    ref: "PL-0088",
+  },
+  {
+    t: "lab",
+    n: "doc_lab",
+    st: "issued",
+    exp: "2026-09-24",
+    ref: "LB-2026-1180",
+  },
+  {
+    t: "cmr",
+    n: "doc_cmr",
+    st: "pending",
+    exp: null,
+    ref: null,
+  },
+  {
+    t: "lc",
+    n: "doc_lc",
+    st: "issued",
+    exp: "2026-09-30",
+    ref: "LC-88-KZ-2026",
+  },
+];
+
+const NOTIFS: Notif[] = [
+  {
+    lvl: "crit",
+    k: "nt_exc",
+    v: "Z-COLD-02",
+    at: "02:40",
+  },
+  {
+    lvl: "warn",
+    k: "nt_win",
+    v: "AZ-2026-SMQ-0396",
+    at: "06:15",
+  },
+  {
+    lvl: "info",
+    k: "nt_fa",
+    v: "FA-2026-0121",
+    at: "09:02",
+  },
+  {
+    lvl: "good",
+    k: "nt_phyto",
+    v: "EX-2026-0088",
+    at: "11:20",
+  },
+];
+
+/* ===================================================================
+   ROLE MODEL
+
+   Two separate things, deliberately kept apart:
+     ORG TYPE - what kind of legal entity this is (13)
+     ROLE     - what a person may do inside one org (37)
+
+   A role is a named bundle of capabilities. The capabilities are the
+   primitives; roles are how the product speaks about them.
+   =================================================================== */
+
+const CAPS: Cap[] = [
+  ["view", "c_view"],
+  ["capture", "c_capture"],
+  ["approve", "c_approve"],
+  ["transact", "c_transact"],
+  ["sign", "c_sign"],
+  ["decide", "c_decide"],
+  ["administer", "c_admin"],
+  ["verify", "c_verify"],
+  ["configure", "c_config"],
+  ["audit", "c_audit"],
+];
+
+const ORGTYPES: OrgTypeDef[] = [
+  ["farmer", "ot_farmer", "harvest"],
+  ["cooperative", "ot_coop", "farms"],
+  ["aggregator", "ot_aggr", "lots"],
+  ["operator", "ot_operator", "ops"],
+  ["processor", "ot_processor", "grade"],
+  ["laboratory", "ot_lab", "qc"],
+  ["exporter", "ot_exporter", "ship"],
+  ["buyer", "ot_buyer", "source"],
+  ["carrier", "ot_carrier", "disp"],
+  ["bank", "ot_bank", "port"],
+  ["insurer", "ot_insurer", "claims"],
+  ["customs_broker", "ot_broker", "cust"],
+  ["authority", "ot_authority", "pub"],
+];
+
+const ROLES: RoleGroup[] = [
+  {
+    g: "rg_platform",
+    items: [
+      [
+        "platform_owner",
+        "r_pown",
+        ["view", "administer", "verify", "configure", "audit"],
+        "platform",
+      ],
+      [
+        "platform_admin",
+        "r_padmin",
+        ["view", "administer", "configure", "audit"],
+        "platform",
+      ],
+      ["verification_officer", "r_verif", ["view", "verify"], "platform"],
+      ["support_agent", "r_support", ["view"], "platform"],
+      ["auditor", "r_auditor", ["view", "audit"], "platform"],
+    ],
+  },
+  {
+    g: "rg_org",
+    items: [
+      [
+        "org_owner",
+        "r_oown",
+        ["view", "transact", "sign", "administer"],
+        "org",
+      ],
+      ["org_admin", "r_oadmin", ["view", "administer"], "org"],
+      ["org_member", "r_omember", ["view"], "org"],
+      ["org_viewer", "r_oviewer", ["view"], "org"],
+    ],
+  },
+  {
+    g: "rg_producer",
+    items: [
+      ["farm_manager", "r_fmgr", ["view", "capture", "transact"], "org"],
+      ["field_recorder", "r_frec", ["view", "capture"], "facility"],
+      ["agronomist", "r_agro", ["view", "capture", "configure"], "org"],
+    ],
+  },
+  {
+    g: "rg_hub",
+    items: [
+      [
+        "hub_manager",
+        "r_hmgr",
+        ["view", "capture", "approve", "configure"],
+        "facility",
+      ],
+      ["gate_operator", "r_gate", ["view", "capture"], "facility"],
+      ["qc_inspector", "r_qc", ["view", "capture", "approve"], "facility"],
+      [
+        "packhouse_supervisor",
+        "r_pack",
+        ["view", "capture", "approve"],
+        "facility",
+      ],
+      ["warehouse_operator", "r_wh", ["view", "capture"], "facility"],
+      [
+        "dispatch_coordinator",
+        "r_disp",
+        ["view", "capture", "approve"],
+        "facility",
+      ],
+    ],
+  },
+  {
+    g: "rg_export",
+    items: [
+      ["commercial_manager", "r_comm", ["view", "transact", "sign"], "org"],
+      [
+        "documentation_officer",
+        "r_doc",
+        ["view", "capture", "transact"],
+        "org",
+      ],
+      ["logistics_coordinator", "r_logco", ["view", "transact"], "org"],
+    ],
+  },
+  {
+    g: "rg_bank",
+    items: [
+      ["credit_officer", "r_credit", ["view", "transact"], "org"],
+      ["risk_analyst", "r_risk", ["view", "audit"], "org"],
+      ["collateral_inspector", "r_collin", ["view", "approve"], "org"],
+      ["credit_approver", "r_capp", ["view", "decide", "sign"], "org"],
+    ],
+  },
+  {
+    g: "rg_insurer",
+    items: [
+      ["underwriter", "r_uw", ["view", "transact", "sign"], "org"],
+      ["claims_adjuster", "r_claims", ["view", "decide"], "org"],
+    ],
+  },
+  {
+    g: "rg_carrier",
+    items: [
+      ["dispatcher", "r_cdisp", ["view", "transact"], "org"],
+      ["driver", "r_driver", ["view", "capture"], "facility"],
+    ],
+  },
+  {
+    g: "rg_lab",
+    items: [
+      ["lab_technician", "r_labtech", ["view", "capture"], "org"],
+      ["lab_approver", "r_labapp", ["view", "approve", "sign"], "org"],
+    ],
+  },
+  {
+    g: "rg_buyer",
+    items: [
+      ["procurement_manager", "r_proc", ["view", "transact", "sign"], "org"],
+      ["quality_manager", "r_qmgr", ["view", "approve"], "org"],
+    ],
+  },
+  {
+    g: "rg_authority",
+    items: [
+      ["ministry_analyst", "r_manalyst", ["view", "audit"], "national"],
+      ["regional_officer", "r_regoff", ["view", "audit"], "region"],
+      ["field_inspector", "r_finsp", ["view", "capture", "approve"], "region"],
+      ["regulator", "r_reg", ["view", "audit"], "national"],
+    ],
+  },
+];
+
+const ROLE_COUNT = ROLES.reduce((s, g) => s + g.items.length, 0);
+
+/* ---- verification: six checks, five of them automatable ----
+   Which checks APPLY depends on what kind of organisation this is. A carrier
+   has no land rights to verify; a farmer needs no transport licence. Showing a
+   check as "passed" when it does not apply to the entity is exactly the kind
+   of thing a compliance officer catches. */
+
+const VCHECKS: VCheck[] = [
+  ["identity", "v_identity", "OneID", "auto"],
+  ["entity", "v_entity", "Business register", "auto"],
+  ["authority", "v_authority", "E-IMZO", "auto"],
+  ["land", "v_land", "E-IJARA / Cadastre", "auto"],
+  ["licence", "v_licence", null, "manual"],
+  ["standing", "v_standing", "Tax / court register", "auto"],
+];
+
+/** Which checks each org type must clear. */
+const VREQ: Record<string, string[]> = {
+  farmer: ["identity", "entity", "authority", "land", "standing"],
+  cooperative: ["identity", "entity", "authority", "land", "standing"],
+  aggregator: ["identity", "entity", "authority", "standing"],
+  operator: ["identity", "entity", "authority", "licence", "standing"],
+  processor: ["identity", "entity", "authority", "licence", "standing"],
+  laboratory: ["identity", "entity", "authority", "licence", "standing"],
+  exporter: ["identity", "entity", "authority", "licence", "standing"],
+  buyer: ["identity", "entity", "authority", "standing"],
+  carrier: ["identity", "entity", "authority", "licence", "standing"],
+  bank: ["identity", "entity", "authority", "licence", "standing"],
+  insurer: ["identity", "entity", "authority", "licence", "standing"],
+  customs_broker: ["identity", "entity", "authority", "licence", "standing"],
+  authority: ["identity", "entity", "authority"],
+};
+
+/** The licence register differs by sector. */
+const VLIC: Record<string, string> = {
+  operator: "Food safety register",
+  processor: "Food safety register",
+  laboratory: "Accreditation register",
+  exporter: "Export register",
+  carrier: "Transport licence register",
+  bank: "Central Bank register",
+  insurer: "Insurance supervision",
+  customs_broker: "Customs broker register",
+};
+
+/** Results for the organisation currently under review. */
+const VSTATE: Record<string, string> = {
+  identity: "pass",
+  entity: "pass",
+  authority: "pass",
+  licence: "review",
+  standing: "pass",
+};
+
+const ORGS: Org[] = [
+  {
+    c: "ORG-00412",
+    n: "Nodir dehqon xo‘jaligi",
+    t: "farmer",
+    tin: "305 872 114",
+    r: "Samarqand",
+    users: 4,
+    st: "verified",
+    since: "2026-06-02",
+    by: "M. Tulyaganova",
+  },
+  {
+    c: "ORG-00097",
+    n: "Zarafshon Agro MChJ",
+    t: "cooperative",
+    tin: "302 114 908",
+    r: "Samarqand",
+    users: 23,
+    st: "verified",
+    since: "2026-03-18",
+    by: "M. Tulyaganova",
+  },
+  {
+    c: "ORG-00511",
+    n: "Urgut Agro MChJ",
+    t: "farmer",
+    tin: "306 220 471",
+    r: "Samarqand",
+    users: 6,
+    st: "review",
+    since: null,
+    by: null,
+  },
+  {
+    c: "ORG-00008",
+    n: "Samarqand Hub Operator",
+    t: "operator",
+    tin: "301 004 552",
+    r: "Samarqand",
+    users: 31,
+    st: "verified",
+    since: "2026-01-14",
+    by: "A. Nazarov",
+  },
+  {
+    c: "ORG-00021",
+    n: "Agrobank ATB",
+    t: "bank",
+    tin: "200 831 776",
+    r: "Toshkent",
+    users: 12,
+    st: "verified",
+    since: "2026-02-03",
+    by: "A. Nazarov",
+  },
+  {
+    c: "ORG-00034",
+    n: "Uzagrosug‘urta AJ",
+    t: "insurer",
+    tin: "201 447 320",
+    r: "Toshkent",
+    users: 7,
+    st: "verified",
+    since: "2026-02-20",
+    by: "A. Nazarov",
+  },
+  {
+    c: "ORG-00563",
+    n: "Uztrans Logistic MChJ",
+    t: "carrier",
+    tin: "307 991 002",
+    r: "Toshkent",
+    users: 9,
+    st: "review",
+    since: null,
+    by: null,
+  },
+  {
+    c: "ORG-00588",
+    n: "Payariq Lab MChJ",
+    t: "laboratory",
+    tin: "308 552 119",
+    r: "Samarqand",
+    users: 3,
+    st: "pending",
+    since: null,
+    by: null,
+  },
+  {
+    c: "ORG-00601",
+    n: "Jomboy Fresh Export",
+    t: "exporter",
+    tin: "309 118 447",
+    r: "Samarqand",
+    users: 2,
+    st: "rejected",
+    since: "2026-08-11",
+    by: "M. Tulyaganova",
+  },
+];
+
+const USERS: PlatformUser[] = [
+  {
+    n: "Nodir Sharipov",
+    org: 0,
+    role: "org_owner",
+    oneid: true,
+    eimzo: true,
+    last: "2026-08-26 07:14",
+    st: "active",
+    ini: "NS",
+  },
+  {
+    n: "G. Rasulova",
+    org: 3,
+    role: "gate_operator",
+    oneid: true,
+    eimzo: false,
+    last: "2026-08-26 06:41",
+    st: "active",
+    ini: "GR",
+  },
+  {
+    n: "D. Yusupov",
+    org: 3,
+    role: "qc_inspector",
+    oneid: true,
+    eimzo: false,
+    last: "2026-08-26 09:15",
+    st: "active",
+    ini: "DY",
+  },
+  {
+    n: "S. Ergashev",
+    org: 3,
+    role: "warehouse_operator",
+    oneid: true,
+    eimzo: false,
+    last: "2026-08-26 06:20",
+    st: "active",
+    ini: "SE",
+  },
+  {
+    n: "A. Bekmurodov",
+    org: 4,
+    role: "credit_officer",
+    oneid: true,
+    eimzo: true,
+    last: "2026-08-25 16:02",
+    st: "active",
+    ini: "AB",
+  },
+  {
+    n: "M. Karimova",
+    org: 5,
+    role: "claims_adjuster",
+    oneid: true,
+    eimzo: true,
+    last: "2026-08-26 08:33",
+    st: "active",
+    ini: "MK",
+  },
+  {
+    n: "R. Tursunov",
+    org: 1,
+    role: "commercial_manager",
+    oneid: true,
+    eimzo: true,
+    last: "2026-08-26 10:05",
+    st: "active",
+    ini: "RT",
+  },
+  {
+    n: "B. Qodirov",
+    org: 6,
+    role: "dispatcher",
+    oneid: true,
+    eimzo: false,
+    last: null,
+    st: "invited",
+    ini: "BQ",
+  },
+  {
+    n: "Z. Ismoilova",
+    org: 2,
+    role: "farm_manager",
+    oneid: false,
+    eimzo: false,
+    last: null,
+    st: "pending",
+    ini: "ZI",
+  },
+  {
+    n: "T. Xolmatov",
+    org: 1,
+    role: "org_admin",
+    oneid: true,
+    eimzo: false,
+    last: "2026-07-30 11:48",
+    st: "suspended",
+    ini: "TX",
+  },
+];
+
+const AUDIT: AuditEntry[] = [
+  {
+    at: "2026-08-26 10:12",
+    who: "A. Bekmurodov",
+    org: "Agrobank ATB",
+    act: "a_viewed",
+    obj: "AZ-2026-SMQ-0412",
+    k: "view",
+  },
+  {
+    at: "2026-08-26 09:15",
+    who: "D. Yusupov",
+    org: "Samarqand Hub Operator",
+    act: "a_created",
+    obj: "QC-2026-4471",
+    k: "capture",
+  },
+  {
+    at: "2026-08-26 08:33",
+    who: "M. Karimova",
+    org: "Uzagrosug‘urta AJ",
+    act: "a_downloaded",
+    obj: "EXC-2026-0311",
+    k: "view",
+  },
+  {
+    at: "2026-08-25 16:02",
+    who: "A. Bekmurodov",
+    org: "Agrobank ATB",
+    act: "a_pledged",
+    obj: "AZ-2026-SMQ-0408",
+    k: "decide",
+  },
+  {
+    at: "2026-08-25 11:20",
+    who: "M. Tulyaganova",
+    org: "Agro Zanjir",
+    act: "a_verified",
+    obj: "ORG-00412",
+    k: "verify",
+  },
+  {
+    at: "2026-08-24 02:40",
+    who: "SENSOR-CD02-B",
+    org: "—",
+    act: "a_alert",
+    obj: "EXC-2026-0311",
+    k: "capture",
+  },
+  {
+    at: "2026-08-23 14:55",
+    who: "A. Nazarov",
+    org: "Agro Zanjir",
+    act: "a_role",
+    obj: "T. Xolmatov",
+    k: "administer",
+  },
+];
+
+const GRANTS: Grant[] = [
+  {
+    org: "Agrobank ATB",
+    scope: "g_pledged",
+    fields: "g_f_coll",
+    st: "active",
+    until: "2027-01-31",
+    by: "g_by_owner",
+  },
+  {
+    org: "Uzagrosug‘urta AJ",
+    scope: "g_covered",
+    fields: "g_f_cond",
+    st: "active",
+    until: "2027-03-15",
+    by: "g_by_owner",
+  },
+  {
+    org: "Qishloq xo‘jaligi vazirligi",
+    scope: "g_region",
+    fields: "g_f_agg",
+    st: "active",
+    until: null,
+    by: "g_by_law",
+  },
+  {
+    org: "Almaty Fresh LLP",
+    scope: "g_contract",
+    fields: "g_f_trace",
+    st: "active",
+    until: "2026-12-31",
+    by: "g_by_owner",
+  },
+  {
+    org: "Statistika agentligi",
+    scope: "g_national",
+    fields: "g_f_anon",
+    st: "active",
+    until: null,
+    by: "g_by_law",
+  },
+];
+
+/* ===== the bundle the provider hands to the screens ===== */
+
+/**
+ * Shaped exactly like a live response, so a screen cannot tell the difference
+ * between this and the API - which is the only way the render tests are worth
+ * anything.
+ */
+export const FIXTURES: PanelData = {
+  PRODUCTS,
+  HUBS,
+  ZONES,
+  FARMS,
+  LOTS,
+  ARRIVALS,
+  EVENTS,
+  QC,
+  TRIAL,
+  TRIALS,
+  FINAPPS,
+  LIENS,
+  CLAIMS,
+  EXCURSION,
+  EXPORTS,
+  SHIPMENT,
+  DOCS,
+  NOTIFS,
+  CAPS,
+  ORGTYPES,
+  ROLES,
+  ROLE_COUNT,
+  VCHECKS,
+  VREQ,
+  VLIC,
+  VSTATE,
+  ORGS,
+  USERS,
+  AUDIT,
+  GRANTS,
+  findLot: (code) => LOTS.find((l) => l.c === code) as Lot,
+  findZone: (code) => ZONES.find((z) => z.c === code) as Zone,
+  findHub: (code) => HUBS.find((h) => h.code === code),
+};
