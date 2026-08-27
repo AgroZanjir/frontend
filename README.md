@@ -14,7 +14,8 @@ npm run dev          # http://localhost:5173
 endpoints from it and falls back to its shipped figures if it cannot:
 
 ```sh
-cd ../backend && .venv/bin/python manage.py runserver 8000   # the backend repository
+# from a clone of https://github.com/AgroZanjir/backend
+.venv/bin/python manage.py runserver 8000
 ```
 
 | Command | What it does |
