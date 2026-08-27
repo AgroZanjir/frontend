@@ -25,6 +25,8 @@ import {
   VRESULT,
   useLabels,
 } from "@/pages/panels/admin/helpers";
+import api from "@/lib/api";
+import { useAction } from "@/lib/panel-actions";
 import { usePanelT } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
@@ -42,7 +44,44 @@ const AdminOrganisation = () => {
   const { orgTypeKey } = useLabels();
   const { ORGS, VCHECKS, VLIC, VREQ, VSTATE } = usePanelData();
   const { t } = usePanelT();
-  const o = ORGS.find((x) => x.c === UNDER_REVIEW)!;
+  // The organisation in review, whichever it is. Pinning the code meant the
+  // screen died the moment that organisation was verified - which is the one
+  // thing this screen exists to do to it.
+  // The organisation in review, whichever it is. Pinning the code meant the
+  // screen died the moment that organisation was verified - which is the one
+  // thing this screen exists to do to it.
+  const o =
+    ORGS.find((x) => x.c === UNDER_REVIEW) ??
+    ORGS.find((x) => x.st === "review" || x.st === "pending") ??
+    ORGS[0];
+
+  // Recording one check. The API refuses a check that does not apply to this
+  // kind of organisation - a carrier has no land rights - so the screen does
+  // not have to police that twice.
+  //
+  // Declared before the early return below: a hook that runs on one render and
+  // not the next is how a component starts reading somebody else's state.
+  const record = useAction(
+    (check: string, result: string) =>
+      api.post(`/organisations/${o?.c}/checks/`, { check, result }),
+    { success: "act_verified", capability: "verify" },
+  );
+
+  const required: string[] = o ? (VREQ[o.t] ?? []) : [];
+  // The licence is the one check a person makes; if it is there, a rejection
+  // lands on it rather than on somebody's identity.
+  const failing = required.includes("licence") ? "licence" : required[0];
+
+  const decideAll = async (result: string) => {
+    for (const check of required) {
+      const done = await record.run(check, result);
+      if (!done) return;
+    }
+  };
+
+  // Nothing to verify: a platform with no organisations is a fresh install,
+  // not an error.
+  if (!o) return null;
 
   return (
     <>
@@ -57,9 +96,23 @@ const AdminOrganisation = () => {
         }
         sub={t("av_sub")}
         actions={
+          // The same two decisions as the card at the foot of the page. Two
+          // places, one handler: a header button that looked identical and did
+          // nothing was worse than no header button.
           <>
-            <Btn icon="apps">{t("av_request")}</Btn>
-            <Btn cls="btn-p" icon="check">
+            <Btn
+              icon="apps"
+              disabled={record.disabled}
+              onClick={() => void decideAll("review")}
+            >
+              {t("av_request")}
+            </Btn>
+            <Btn
+              cls="btn-p"
+              icon="check"
+              disabled={record.disabled}
+              onClick={() => void decideAll("pass")}
+            >
               {t("av_approve")}
             </Btn>
           </>
@@ -132,10 +185,32 @@ const AdminOrganisation = () => {
                         )}
                       </td>
                       <td>
-                        <span className={`pill ${resCls}`}>
-                          <span className="dot" />
-                          {t(resKey)}
-                        </span>
+                        {applies ? (
+                          // One check, one decision. The organisation's status
+                          // is recomputed from these rows by the API - it is a
+                          // cache of the checks, and a cache written by hand is
+                          // how the two stop agreeing.
+                          <select
+                            className="inp"
+                            style={{ padding: "3px 7px", fontSize: 11.5 }}
+                            value={result}
+                            disabled={record.disabled}
+                            onChange={(e) =>
+                              void record.run(key, e.target.value)
+                            }
+                            aria-label={t(label)}
+                          >
+                            <option value="pending">{t("v_pending")}</option>
+                            <option value="review">{t("s_review")}</option>
+                            <option value="pass">{t("v_pass")}</option>
+                            <option value="fail">{t("v_fail")}</option>
+                          </select>
+                        ) : (
+                          <span className={`pill ${resCls}`}>
+                            <span className="dot" />
+                            {t(resKey)}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   );
@@ -169,11 +244,32 @@ const AdminOrganisation = () => {
 
           <PanelCard head={t("av_decision")}>
             <div className="stack" style={{ gap: 9 }}>
-              <Btn cls="btn-p" icon="check">
+              {/* Approving is passing every check that applies, one call each -
+                  not a flag set beside them. The organisation's status follows
+                  from the checks, so this button and the rows above cannot
+                  disagree. */}
+              <Btn
+                cls="btn-p"
+                icon="check"
+                disabled={record.disabled}
+                onClick={() => void decideAll("pass")}
+              >
                 {t("av_approve")}
               </Btn>
-              <Btn icon="apps">{t("av_request")}</Btn>
-              <Btn cls="btn-q">{t("av_reject")}</Btn>
+              <Btn
+                icon="apps"
+                disabled={record.disabled}
+                onClick={() => void decideAll("review")}
+              >
+                {t("av_request")}
+              </Btn>
+              <Btn
+                cls="btn-q"
+                disabled={record.disabled}
+                onClick={() => void record.run(failing, "fail")}
+              >
+                {t("av_reject")}
+              </Btn>
             </div>
           </PanelCard>
         </div>

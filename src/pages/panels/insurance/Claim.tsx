@@ -18,12 +18,28 @@ import {
   PanelCard,
   Pill,
 } from "@/components/panel/primitives";
+import api from "@/lib/api";
+import { useAction } from "@/lib/panel-actions";
 import { usePanelT } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
 const InsuranceClaim = () => {
   const { CLAIMS, EXCURSION, findLot } = usePanelData();
   const { t, nf, money, dur } = usePanelT();
+
+  const open = CLAIMS.find((x) => x.st === "review") ?? CLAIMS[0];
+
+  // Approving sends the claimed figure through as the assessed one, because
+  // this screen has no adjuster's field yet. That is a gap, not a rule: the
+  // API takes an assessed amount precisely because the two differ.
+  const decide = useAction(
+    (status: string) =>
+      api.post(`/finance/claims/${open.c}/decide/`, {
+        status,
+        assessed_minor: status === "approved" ? Math.round(open.amt * 100) : 0,
+      }),
+    { success: "act_decided", capability: "decide" },
+  );
   const navigate = useNavigate();
 
   const c = CLAIMS[0];
@@ -140,10 +156,21 @@ const InsuranceClaim = () => {
               {t("ic_note")}
             </p>
             <div className="row" style={{ gap: 8 }}>
-              <Btn cls="btn-p" icon="check">
+              <Btn
+                cls="btn-p"
+                icon="check"
+                disabled={decide.disabled}
+                onClick={() => void decide.run("approved")}
+              >
                 {t("ic_approve")}
               </Btn>
-              <Btn cls="btn-q">{t("ic_reject")}</Btn>
+              <Btn
+                cls="btn-q"
+                disabled={decide.disabled}
+                onClick={() => void decide.run("declined")}
+              >
+                {t("ic_reject")}
+              </Btn>
             </div>
           </PanelCard>
         </div>

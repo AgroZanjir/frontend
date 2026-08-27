@@ -56,7 +56,14 @@ const HubGate = () => {
               <Pill s={a.st} />
             </td>
             <td>
-              <Btn sm cls={a.st === "weighing" ? "btn-p" : undefined}>
+              {/* Every row is a vehicle standing outside. Taking one to the
+                  weighbridge is the next thing that happens to it, so the
+                  button goes there rather than doing nothing. */}
+              <Btn
+                sm
+                cls={a.st === "weighing" ? "btn-p" : undefined}
+                onClick={() => navigate("/hub/weigh")}
+              >
                 {t("g_weigh")}
               </Btn>
             </td>

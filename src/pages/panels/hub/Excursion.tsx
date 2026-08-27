@@ -19,6 +19,8 @@ import {
   PanelCard,
   Tbl,
 } from "@/components/panel/primitives";
+import api from "@/lib/api";
+import { useAction } from "@/lib/panel-actions";
 import { usePanelT } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
@@ -27,6 +29,15 @@ const HubExcursion = () => {
   const { t, nf, pn, money, dur } = usePanelT();
   const navigate = useNavigate();
   const e = EXCURSION;
+
+  // Acknowledging writes the resolution into the log of every lot the
+  // excursion touched: the insurer's evidence bundle is assembled from those
+  // events, so an acknowledgement that only changed a flag would leave the
+  // bundle saying the breach was never closed.
+  const resolve = useAction(
+    () => api.post(`/storage/excursions/${e.c}/resolve/`),
+    { success: "act_resolved", capability: "approve" },
+  );
 
   const contents = ["e_c1", "e_c2", "e_c3", "e_c4", "e_c5"];
 
@@ -47,7 +58,13 @@ const HubExcursion = () => {
             <Btn cls="btn-p" icon="down">
               {t("e_bundle")}
             </Btn>
-            <Btn icon="check">{t("e_ack")}</Btn>
+            <Btn
+              icon="check"
+              disabled={resolve.disabled || e.resolved}
+              onClick={() => void resolve.run()}
+            >
+              {e.resolved ? t("ev_resolved") : t("e_ack")}
+            </Btn>
           </>
         }
       />

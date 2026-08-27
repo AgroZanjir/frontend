@@ -1568,3 +1568,173 @@ th.r {
     transform: translateY(-5.6px) rotate(-45deg);
   }
 }
+
+/* ===== toasts =====
+   Bottom right, above the drawer and its scrim. A failure stays until it is
+   dismissed; a success fades. Both are alerts, so they look like the ones
+   already on the screen they happened on. */
+.toasts {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: min(420px, calc(100vw - 32px));
+}
+.toasts .alert {
+  box-shadow: var(--shadow-2);
+  position: relative;
+  padding-right: 34px;
+  animation: toast-in 0.22s cubic-bezier(0.22, 0.7, 0.28, 1);
+}
+.toast-x {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  border: 0;
+  background: none;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--ink-3);
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.toast-x:hover {
+  color: var(--ink);
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 640px) {
+  .toasts {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    max-width: none;
+  }
+}
+
+/* ===== search and the bell =====
+   Both were decoration: a magnifier beside the word "Search…", and a dot on a
+   bell with nothing behind it. Both now open a panel under the control that
+   opened them, and both close on a tap outside. */
+.topsearch-wrap {
+  position: relative;
+}
+.topsearch {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.topsearch input {
+  border: 0;
+  background: none;
+  outline: none;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--ink);
+  width: 200px;
+  padding: 0;
+}
+.topsearch input::placeholder {
+  color: var(--ink-3);
+}
+@media (max-width: 900px) {
+  .topsearch input {
+    width: 110px;
+  }
+}
+
+.srch-drop,
+.bell-drop {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 70;
+  min-width: 300px;
+  max-width: min(420px, 90vw);
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-2);
+  padding: 5px;
+}
+.srch-hit,
+.bell-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 9px;
+  border: 0;
+  background: none;
+  border-radius: var(--r-xs);
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink);
+}
+.srch-hit:hover,
+.bell-row:not(:disabled):hover {
+  background: var(--surface-2);
+}
+.srch-k {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  flex: none;
+  min-width: 54px;
+}
+.srch-empty {
+  padding: 12px 10px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  text-align: center;
+}
+
+.bell-wrap {
+  position: relative;
+}
+.bell-row {
+  align-items: flex-start;
+}
+.bell-row:disabled {
+  cursor: default;
+}
+.bell-row.read {
+  opacity: 0.5;
+}
+.bell-row .pill {
+  padding: 4px;
+  flex: none;
+  margin-top: 1px;
+}
+.bell-t {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+.bell-s {
+  display: block;
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-top: 1px;
+}
+.bell-row .t-xs {
+  margin-left: auto;
+  flex: none;
+  align-self: flex-start;
+}

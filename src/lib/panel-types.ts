@@ -182,6 +182,8 @@ export interface FinanceApp {
 }
 
 export interface Lien {
+  /** The row's own id: releasing addresses the lien, not the lot. */
+  id: string;
   lot: string;
   fa: string;
   amt: number;
@@ -216,6 +218,8 @@ export interface Excursion {
   lots: string[];
   sensor: string;
   trace: number[];
+  /** Whether the breach has been closed. The acknowledge button reads this. */
+  resolved: boolean;
 }
 
 export interface ExportContract {
@@ -261,10 +265,14 @@ export interface Doc {
 }
 
 export interface Notif {
+  /** The row's own id: the bell marks one read by it. */
+  id: string;
   lvl: "crit" | "warn" | "info" | "good";
   k: string;
   v: string;
   at: string;
+  /** True once this person has read it. The dot on the bell counts these. */
+  read: boolean;
 }
 
 /** `[capability key, i18n key]`. */
@@ -297,6 +305,8 @@ export interface Org {
 }
 
 export interface PlatformUser {
+  /** The person's own id: suspending addresses the account, not the name. */
+  id: string;
   n: string;
   /** Index into ORGS. */
   org: number;
@@ -322,6 +332,8 @@ export interface AuditEntry {
 
 /** Data-sharing grants: which org may see which fields of whose data. */
 export interface Grant {
+  /** The grant's own id: revoking addresses the grant, not the grantee. */
+  id: string;
   org: string;
   scope: string;
   fields: string;

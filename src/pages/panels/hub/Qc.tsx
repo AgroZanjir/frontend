@@ -18,12 +18,47 @@ import {
   Tag,
   Tbl,
 } from "@/components/panel/primitives";
+import { useState } from "react";
+
+import api from "@/lib/api";
+import { useAction } from "@/lib/panel-actions";
 import { usePanelT } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
+import { usePanelPersona } from "@/lib/panel-session";
 
 const HubQc = () => {
-  const { QC } = usePanelData();
+  const { QC, LOTS, PRODUCTS, findLot } = usePanelData();
   const { t, pn } = usePanelT();
+
+  const [code, setCode] = useState(LOTS[0]?.c ?? "");
+  const [stage, setStage] = useState("intake");
+  const [brix, setBrix] = useState("12.4");
+  const [calibre, setCalibre] = useState("2.1");
+  const [firmness, setFirmness] = useState("8.4");
+  const [defects, setDefects] = useState("1.8");
+  const [passed, setPassed] = useState(true);
+  const [grade, setGrade] = useState("A");
+
+  const lot = findLot(code);
+  const inspector = usePanelPersona()?.name ?? "";
+
+  const record = useAction(
+    () =>
+      api.post("/quality/qc-records/", {
+        lot: code,
+        stage,
+        inspected_on: new Date().toISOString().slice(0, 10),
+        measurements: {
+          brix: Number(brix) || 0,
+          calibre_kg: Number(calibre) || 0,
+          firmness_n: Number(firmness) || 0,
+        },
+        defect_pct: Number(defects) || 0,
+        grade_assigned: grade,
+        passed,
+      }),
+    { success: "act_qc", capability: "capture" },
+  );
 
   return (
     <>
@@ -39,21 +74,44 @@ const HubQc = () => {
       >
         <PanelCard bodyCls="stack" bodyStyle={{ gap: 15 }}>
           <div className="row" style={{ gap: 8 }}>
-            <span className="lotid" style={{ fontSize: 14 }}>
-              AZ-2026-SMQ-0412
-            </span>
-            <Tag>{pn("melon")}</Tag>
-            <Tag cls="p-line">Torpeda</Tag>
+            <select
+              className="inp mono"
+              style={{ maxWidth: 220 }}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              aria-label={t("pl_lot")}
+            >
+              {LOTS.map((l) => (
+                <option key={l.c} value={l.c}>
+                  {l.c}
+                </option>
+              ))}
+            </select>
+            {lot && <Tag>{pn(lot.p)}</Tag>}
+            {lot && <Tag cls="p-line">{PRODUCTS[lot.p].v}</Tag>}
           </div>
 
           <div className="grid g2" style={{ gap: 14 }}>
             <Field label={t("qc_stage")}>
-              <select className="inp">
-                <option>{t("q_intake")}</option>
+              <select
+                className="inp"
+                value={stage}
+                onChange={(e) => setStage(e.target.value)}
+              >
+                {["intake", "pre_storage", "in_storage", "pre_dispatch"].map(
+                  (key) => (
+                    <option key={key} value={key}>
+                      {t(`q_${key}`)}
+                    </option>
+                  ),
+                )}
               </select>
             </Field>
-            <Field label={t("qc_by")}>
-              <input className="inp" defaultValue="D. Yusupov" />
+            <Field label={t("qc_by")} hint={t("qc_by_hint")}>
+              {/* The inspector is whoever is signed in. Typing a name here was
+                  a way to attribute a measurement to someone who did not take
+                  it. */}
+              <input className="inp" readOnly value={inspector} />
             </Field>
           </div>
 
@@ -62,25 +120,53 @@ const HubQc = () => {
 
           <div className="grid g3" style={{ gap: 14 }}>
             <Field label={t("qc_brix")} required hint="6–18">
-              <input className="inp" defaultValue="12.4" />
+              <input
+                className="inp"
+                inputMode="decimal"
+                value={brix}
+                onChange={(e) => setBrix(e.target.value)}
+              />
             </Field>
             <Field label={`${t("qc_cal")} (kg)`} required hint="1.4–3.2">
-              <input className="inp" defaultValue="2.1" />
+              <input
+                className="inp"
+                inputMode="decimal"
+                value={calibre}
+                onChange={(e) => setCalibre(e.target.value)}
+              />
             </Field>
             <Field label={`${t("qc_firm")} (N)`}>
-              <input className="inp" defaultValue="8.4" />
+              <input
+                className="inp"
+                inputMode="decimal"
+                value={firmness}
+                onChange={(e) => setFirmness(e.target.value)}
+              />
             </Field>
             <Field label={`${t("qc_def")} (%)`} hint="max 5.0">
-              <input className="inp" defaultValue="1.8" />
+              <input
+                className="inp"
+                inputMode="decimal"
+                value={defects}
+                onChange={(e) => setDefects(e.target.value)}
+              />
             </Field>
             <Field label={t("qc_app")}>
-              <select className="inp">
-                <option>5 — {t("qc_pass")}</option>
-                <option>4</option>
+              <select
+                className="inp"
+                value={passed ? "pass" : "fail"}
+                onChange={(e) => setPassed(e.target.value === "pass")}
+              >
+                <option value="pass">{t("qc_pass")}</option>
+                <option value="fail">{t("qc_fail")}</option>
               </select>
             </Field>
             <Field label={t("qc_g")}>
-              <select className="inp">
+              <select
+                className="inp"
+                value={grade}
+                onChange={(e) => setGrade(e.target.value)}
+              >
                 <option>A</option>
                 <option>B</option>
                 <option>C</option>
@@ -121,7 +207,12 @@ const HubQc = () => {
           </div>
 
           <div className="row">
-            <Btn cls="btn-p" icon="check">
+            <Btn
+              cls="btn-p"
+              icon="check"
+              disabled={record.disabled || !code}
+              onClick={() => void record.run()}
+            >
               {t("qc_save")}
             </Btn>
             <Btn cls="btn-q">{t("cancel")}</Btn>

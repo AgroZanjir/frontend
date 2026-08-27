@@ -17,6 +17,8 @@ import {
   Tag,
 } from "@/components/panel/primitives";
 import { FLAG } from "@/pages/panels/exportp/Dashboard";
+import api from "@/lib/api";
+import { useAction } from "@/lib/panel-actions";
 import { usePanelT } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
@@ -26,6 +28,16 @@ const REQUIRED = ["phyto", "origin", "invoice", "packing", "lab"];
 const ExportCustoms = () => {
   const { DOCS, EXPORTS, FARMS, PRODUCTS, findLot } = usePanelData();
   const { t, nf, pn } = usePanelT();
+
+  const contract = EXPORTS[0];
+
+  // The API refuses a document set that is incomplete or expired and names
+  // which ones. A phytosanitary certificate that expires before the border is
+  // worth nothing, and finding that out at the border is the expensive way.
+  const lodge = useAction(
+    () => api.post(`/commercial/exports/${contract.c}/declaration/`),
+    { success: "act_lodged", capability: "sign" },
+  );
   const x = EXPORTS[0];
   const l = findLot("AZ-2026-SMQ-0408");
   const required = DOCS.filter((d) => REQUIRED.includes(d.t));
@@ -36,7 +48,12 @@ const ExportCustoms = () => {
         title={t("cu_title")}
         sub={t("cu_sub")}
         actions={
-          <Btn cls="btn-p" icon="arr">
+          <Btn
+            cls="btn-p"
+            icon="arr"
+            disabled={lodge.disabled || !contract}
+            onClick={() => void lodge.run()}
+          >
             {t("cu_send")}
           </Btn>
         }

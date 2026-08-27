@@ -18,6 +18,10 @@ import {
   Tag,
 } from "@/components/panel/primitives";
 import PanelIcon from "@/components/panel/icons";
+import { useState } from "react";
+
+import api from "@/lib/api";
+import { useAction } from "@/lib/panel-actions";
 import { usePanelT } from "@/lib/panel-format";
 import type { ProductCode } from "@/lib/panel-types";
 import { usePanelData } from "@/lib/panel-data";
@@ -29,9 +33,26 @@ const READY: [string, ProductCode, number][] = [
 ];
 
 const HubDispatch = () => {
-  const { findLot } = usePanelData();
+  const { LOTS, LIENS, findLot } = usePanelData();
   const { t, nf, pn, money } = usePanelT();
-  const l = findLot("AZ-2026-SMQ-0412");
+
+  // The screen is about the lot that cannot leave. Show a pledged one if there
+  // is one - that is the case worth demonstrating - and otherwise the first
+  // lot on a shelf.
+  const pledged = LOTS.find((lot) => lot.pledge && lot.st === "stored");
+  const [code, setCode] = useState(
+    (pledged ?? LOTS.find((lot) => lot.st === "stored") ?? LOTS[0])?.c ?? "",
+  );
+  const l = findLot(code);
+  const lien = LIENS.find((x) => x.lot === code && x.st === "active");
+
+  // Dispatch asks the spine, which asks every cluster that registered a guard.
+  // A pledged lot comes back 409 with the lender named, and the toast prints
+  // exactly that - this screen does not decide, it reports.
+  const dispatch = useAction(() => api.post(`/lots/${code}/dispatch/`), {
+    success: "act_dispatched",
+    capability: "approve",
+  });
 
   return (
     <>
@@ -72,18 +93,43 @@ const HubDispatch = () => {
               />
               <KV
                 rows={[
-                  [t("d_lien"), <Pill s="active" cls="p-crit" />],
-                  [t("b_ref"), <span className="mono">FA-2026-0117</span>],
-                  [t("b_amt"), money(168_000_000)],
+                  [
+                    t("d_lien"),
+                    lien ? (
+                      <Pill s="active" cls="p-crit" />
+                    ) : (
+                      <Tag cls="p-line">{t("none")}</Tag>
+                    ),
+                  ],
+                  [t("b_ref"), <span className="mono">{lien?.fa ?? "—"}</span>],
+                  [t("b_amt"), lien ? money(lien.amt) : "—"],
                 ]}
               />
             </div>
 
             <div className="row" style={{ marginTop: 14 }}>
-              <Btn cls="btn-p" icon="arr">
-                {t("d_req")}
-              </Btn>
-              <Btn icon="disp" disabled>
+              <select
+                className="inp mono"
+                style={{ maxWidth: 220 }}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                aria-label={t("pl_lot")}
+              >
+                {LOTS.map((lot) => (
+                  <option key={lot.c} value={lot.c}>
+                    {lot.c}
+                  </option>
+                ))}
+              </select>
+              {/* Enabled whether or not this screen thinks the lot is pledged.
+                  The lien is the API's to enforce, and a button disabled by a
+                  stale cache is a lie about why. */}
+              <Btn
+                cls="btn-p"
+                icon="disp"
+                disabled={dispatch.disabled || !l}
+                onClick={() => void dispatch.run()}
+              >
                 {t("n_disp")}
               </Btn>
             </div>

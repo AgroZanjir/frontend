@@ -13,6 +13,11 @@ import {
   PageHead,
   PanelCard,
 } from "@/components/panel/primitives";
+import { useState } from "react";
+
+import api from "@/lib/api";
+import { useAction } from "@/lib/panel-actions";
+import { usePanelData } from "@/lib/panel-data";
 import { usePanelT } from "@/lib/panel-format";
 
 /** Positions already holding a lot, as indexes into the 4x8 grid. */
@@ -21,7 +26,31 @@ const TAKEN = [0, 1, 2, 5, 6, 9, 10, 11, 17, 18, 22, 25, 26];
 const TARGET = 13;
 
 const HubPlace = () => {
-  const { t } = usePanelT();
+  const { t, nf } = usePanelT();
+  const { LOTS, ZONES, findLot } = usePanelData();
+
+  // A lot that is graded and not yet on a shelf is what this screen is for.
+  const waiting = LOTS.filter(
+    (l) => l.st === "graded" || l.st === "registered",
+  );
+  const [code, setCode] = useState(waiting[0]?.c ?? LOTS[0]?.c ?? "");
+  const [zone, setZone] = useState(
+    ZONES.find((z) => z.m === "zeroco")?.c ?? ZONES[0]?.c ?? "",
+  );
+  const [position, setPosition] = useState("B-06");
+
+  const lot = findLot(code);
+  const room = ZONES.find((z) => z.c === zone);
+
+  const place = useAction(
+    () =>
+      api.post("/storage/placements/", {
+        lot: code,
+        zone,
+        position,
+      }),
+    { success: "act_placed", capability: "capture" },
+  );
 
   return (
     <>
@@ -37,29 +66,60 @@ const HubPlace = () => {
               <input
                 className="inp mono"
                 style={{ minWidth: 0 }}
-                defaultValue="AZ-2026-SMQ-0412"
+                value={code}
+                onChange={(e) => setCode(e.target.value.trim())}
+                list="placeable-lots"
               />
-              <Btn icon="lookup" />
+              <datalist id="placeable-lots">
+                {LOTS.map((l) => (
+                  <option key={l.c} value={l.c} />
+                ))}
+              </datalist>
             </div>
           </Field>
           <Field label={t("pl_zone")}>
-            <select className="inp">
-              <option>Z-ZEROCO-01 — {t("m_zeroco")}</option>
-              <option>Z-COLD-01 — {t("m_cold")}</option>
+            <select
+              className="inp"
+              value={zone}
+              onChange={(e) => setZone(e.target.value)}
+            >
+              {ZONES.map((z) => (
+                <option key={z.c} value={z.c}>
+                  {z.c} — {t(`m_${z.m}`)}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label={t("pl_pos")}>
-            <input className="inp mono" defaultValue="B-06" />
+            <input
+              className="inp mono"
+              value={position}
+              onChange={(e) => setPosition(e.target.value.toUpperCase())}
+            />
           </Field>
           <div className="hr" />
           <KV
             rows={[
-              [t("w_net"), "4 200 kg"],
-              [t("qc_g"), "A"],
-              [t("z_temp"), "0.4 °C"],
+              [t("w_net"), lot ? `${nf(lot.net)} kg` : "—"],
+              [t("qc_g"), lot?.g || "—"],
+              [t("z_temp"), room ? `${room.t} °C` : "—"],
+              [
+                t("z_cap"),
+                room
+                  ? `${Math.round((room.used / room.cap) * 100)}% · ${nf(room.cap - room.used)} kg ${t("pl_free")}`
+                  : "—",
+              ],
             ]}
           />
-          <Btn cls="btn-p" icon="box">
+          {/* The API refuses an ungraded lot and a full zone, with the reason.
+              Refusing here as well would only mean saying it twice, and worse:
+              the zone's fill changes while this screen is open. */}
+          <Btn
+            cls="btn-p"
+            icon="box"
+            disabled={place.disabled || !code || !zone}
+            onClick={() => void place.run()}
+          >
             {t("pl_place")}
           </Btn>
         </PanelCard>

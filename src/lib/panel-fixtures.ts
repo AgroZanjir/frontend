@@ -592,6 +592,7 @@ const FINAPPS: FinanceApp[] = [
 
 const LIENS: Lien[] = [
   {
+    id: "lien-1",
     lot: "AZ-2026-SMQ-0412",
     fa: "FA-2026-0117",
     amt: 168000000,
@@ -599,6 +600,7 @@ const LIENS: Lien[] = [
     st: "active",
   },
   {
+    id: "lien-2",
     lot: "AZ-2026-SMQ-0408",
     fa: "FA-2026-0121",
     amt: 410000000,
@@ -606,6 +608,7 @@ const LIENS: Lien[] = [
     st: "active",
   },
   {
+    id: "lien-3",
     lot: "AZ-2026-SMQ-0362",
     fa: "FA-2026-0109",
     amt: 640000000,
@@ -663,6 +666,7 @@ const EXCURSION: Excursion = {
   sev: "critical",
   lots: ["AZ-2026-SMQ-0396"],
   sensor: "SENSOR-CD02-B",
+  resolved: false,
   trace: [4, 4.1, 4.3, 5.2, 6.1, 6.7, 6.9, 6.8, 6.2, 5.4, 4.6, 4.1, 4],
 };
 
@@ -783,24 +787,32 @@ const DOCS: Doc[] = [
 
 const NOTIFS: Notif[] = [
   {
+    id: "notif-crit",
+    read: false,
     lvl: "crit",
     k: "nt_exc",
     v: "Z-COLD-02",
     at: "02:40",
   },
   {
+    id: "notif-warn",
+    read: false,
     lvl: "warn",
     k: "nt_win",
     v: "AZ-2026-SMQ-0396",
     at: "06:15",
   },
   {
+    id: "notif-info",
+    read: false,
     lvl: "info",
     k: "nt_fa",
     v: "FA-2026-0121",
     at: "09:02",
   },
   {
+    id: "notif-good",
+    read: false,
     lvl: "good",
     k: "nt_phyto",
     v: "EX-2026-0088",
@@ -1137,6 +1149,7 @@ const ORGS: Org[] = [
 
 const USERS: PlatformUser[] = [
   {
+    id: "user-1",
     n: "Nodir Sharipov",
     org: 0,
     role: "org_owner",
@@ -1147,6 +1160,7 @@ const USERS: PlatformUser[] = [
     ini: "NS",
   },
   {
+    id: "user-2",
     n: "G. Rasulova",
     org: 3,
     role: "gate_operator",
@@ -1157,6 +1171,7 @@ const USERS: PlatformUser[] = [
     ini: "GR",
   },
   {
+    id: "user-3",
     n: "D. Yusupov",
     org: 3,
     role: "qc_inspector",
@@ -1167,6 +1182,7 @@ const USERS: PlatformUser[] = [
     ini: "DY",
   },
   {
+    id: "user-4",
     n: "S. Ergashev",
     org: 3,
     role: "warehouse_operator",
@@ -1177,6 +1193,7 @@ const USERS: PlatformUser[] = [
     ini: "SE",
   },
   {
+    id: "user-5",
     n: "A. Bekmurodov",
     org: 4,
     role: "credit_officer",
@@ -1187,6 +1204,7 @@ const USERS: PlatformUser[] = [
     ini: "AB",
   },
   {
+    id: "user-6",
     n: "M. Karimova",
     org: 5,
     role: "claims_adjuster",
@@ -1197,6 +1215,7 @@ const USERS: PlatformUser[] = [
     ini: "MK",
   },
   {
+    id: "user-7",
     n: "R. Tursunov",
     org: 1,
     role: "commercial_manager",
@@ -1207,6 +1226,7 @@ const USERS: PlatformUser[] = [
     ini: "RT",
   },
   {
+    id: "user-8",
     n: "B. Qodirov",
     org: 6,
     role: "dispatcher",
@@ -1217,6 +1237,7 @@ const USERS: PlatformUser[] = [
     ini: "BQ",
   },
   {
+    id: "user-9",
     n: "Z. Ismoilova",
     org: 2,
     role: "farm_manager",
@@ -1227,6 +1248,7 @@ const USERS: PlatformUser[] = [
     ini: "ZI",
   },
   {
+    id: "user-10",
     n: "T. Xolmatov",
     org: 1,
     role: "org_admin",
@@ -1299,6 +1321,7 @@ const AUDIT: AuditEntry[] = [
 
 const GRANTS: Grant[] = [
   {
+    id: "grant-1",
     org: "Agrobank ATB",
     scope: "g_pledged",
     fields: "g_f_coll",
@@ -1307,6 +1330,7 @@ const GRANTS: Grant[] = [
     by: "g_by_owner",
   },
   {
+    id: "grant-2",
     org: "Uzagrosug‘urta AJ",
     scope: "g_covered",
     fields: "g_f_cond",
@@ -1315,6 +1339,7 @@ const GRANTS: Grant[] = [
     by: "g_by_owner",
   },
   {
+    id: "grant-3",
     org: "Qishloq xo‘jaligi vazirligi",
     scope: "g_region",
     fields: "g_f_agg",
@@ -1323,6 +1348,7 @@ const GRANTS: Grant[] = [
     by: "g_by_law",
   },
   {
+    id: "grant-4",
     org: "Almaty Fresh LLP",
     scope: "g_contract",
     fields: "g_f_trace",
@@ -1331,6 +1357,7 @@ const GRANTS: Grant[] = [
     by: "g_by_owner",
   },
   {
+    id: "grant-5",
     org: "Statistika agentligi",
     scope: "g_national",
     fields: "g_f_anon",

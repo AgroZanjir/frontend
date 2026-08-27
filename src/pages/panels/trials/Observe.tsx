@@ -16,6 +16,11 @@ import {
   Tag,
   Tbl,
 } from "@/components/panel/primitives";
+import { useState } from "react";
+
+import api from "@/lib/api";
+import { useAction } from "@/lib/panel-actions";
+import { usePanelData } from "@/lib/panel-data";
 import { usePanelT } from "@/lib/panel-format";
 
 /** Observations already recorded for this arm. */
@@ -26,7 +31,53 @@ const RECORDED: [number, string, string][] = [
 ];
 
 const TrialObserve = () => {
-  const { t } = usePanelT();
+  const { t, nf } = usePanelT();
+  const { TRIAL } = usePanelData();
+
+  // The next sampling day, not an arbitrary one: the schedule is the protocol,
+  // and an observation on day 9 of a seven-day schedule is not a measurement
+  // anyone can compare.
+  const next = TRIAL.days[TRIAL.observed] ?? TRIAL.days.at(-1) ?? 0;
+  const [arm, setArm] = useState<"zeroco" | "control">("zeroco");
+  const [weight, setWeight] = useState("");
+  const [waste, setWaste] = useState("");
+  const [firmness, setFirmness] = useState("");
+
+  const side = arm === "zeroco" ? TRIAL.z : TRIAL.c;
+  // Weight loss is what the trial compares, and it is a percentage of what
+  // went in - so the tablet takes the kilograms a person can actually weigh
+  // and does the arithmetic here.
+  const lossPct =
+    side.qty > 0 && Number(weight) > 0
+      ? Math.max(((side.qty - Number(weight)) / side.qty) * 100, 0)
+      : 0;
+  const wastePct =
+    side.qty > 0 && Number(waste) > 0 ? (Number(waste) / side.qty) * 100 : 0;
+
+  const record = useAction(
+    () =>
+      api.post(`/quality/trials/${TRIAL.code}/observations/`, {
+        arm,
+        day_index: next,
+        observed_on: new Date().toISOString().slice(0, 10),
+        weight_loss_pct: Number(lossPct.toFixed(2)),
+        waste_pct: Number(wastePct.toFixed(2)),
+        // Left out rather than sent empty: a measurement nobody took is
+        // absent, and absent is not the same as zero on a chart the whole
+        // business case rests on.
+        ...(Number(firmness) > 0 ? { firmness_n: Number(firmness) } : {}),
+      }),
+    { success: "act_observed", capability: "capture" },
+  );
+
+  const save = async () => {
+    const done = await record.run();
+    if (done) {
+      setWeight("");
+      setWaste("");
+      setFirmness("");
+    }
+  };
 
   return (
     <>
@@ -37,25 +88,62 @@ const TrialObserve = () => {
           <div className="phone-top">09:41</div>
           <div className="phone-b">
             <div className="row" style={{ gap: 7 }}>
-              <Tag cls="p-zeroco">TR-MELON-01</Tag>
-              <Tag cls="p-line">{t("t_armz")}</Tag>
+              <Tag cls="p-zeroco">{TRIAL.code}</Tag>
+              <select
+                className="inp"
+                style={{ padding: "3px 6px", fontSize: 11 }}
+                value={arm}
+                onChange={(e) => setArm(e.target.value as "zeroco" | "control")}
+                aria-label={t("t_arms")}
+              >
+                <option value="zeroco">{t("t_armz")}</option>
+                <option value="control">{t("t_armc")}</option>
+              </select>
             </div>
             <div className="lotid" style={{ fontSize: 13 }}>
-              AZ-2026-SMQ-0412
+              {side.lot}
             </div>
 
             <PanelCard bodyCls="stack" bodyStyle={{ gap: 11, padding: 13 }}>
-              <Field label={t("o_dayidx")}>
-                <input className="inp big" defaultValue="14" readOnly />
+              <Field label={t("o_dayidx")} hint={t("o_day_hint")}>
+                <input className="inp big" value={next} readOnly />
               </Field>
-              <Field label={`${t("o_weight")} (kg)`} required>
-                <input className="inp big" defaultValue="4 141" />
+              <Field
+                label={`${t("o_weight")} (kg)`}
+                required
+                hint={`${t("o_started")} ${nf(side.qty)} kg`}
+              >
+                <input
+                  className="inp big"
+                  inputMode="decimal"
+                  placeholder={String(side.qty)}
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                />
               </Field>
-              <Field label={`${t("o_waste")} (kg)`}>
-                <input className="inp" defaultValue="17" />
+              <Field
+                label={`${t("o_waste")} (kg)`}
+                hint={wastePct ? `${wastePct.toFixed(1)}%` : undefined}
+              >
+                <input
+                  className="inp"
+                  inputMode="decimal"
+                  value={waste}
+                  onChange={(e) => setWaste(e.target.value)}
+                />
               </Field>
-              <Field label={`${t("t_firm")} (N)`}>
-                <input className="inp" defaultValue="8.1" />
+              <Field
+                label={`${t("t_firm")} (N)`}
+                hint={
+                  lossPct ? `${t("t_loss")} ${lossPct.toFixed(1)}%` : undefined
+                }
+              >
+                <input
+                  className="inp"
+                  inputMode="decimal"
+                  value={firmness}
+                  onChange={(e) => setFirmness(e.target.value)}
+                />
               </Field>
             </PanelCard>
 
@@ -100,6 +188,8 @@ const TrialObserve = () => {
               cls="btn-p"
               icon="check"
               style={{ justifyContent: "center", padding: 11 }}
+              disabled={record.disabled || !weight}
+              onClick={() => void save()}
             >
               {t("o_save")}
             </Btn>

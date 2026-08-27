@@ -8,11 +8,22 @@
  */
 
 import { Btn, Note, PageHead, Tag, Tbl } from "@/components/panel/primitives";
+import api from "@/lib/api";
+import { useAction } from "@/lib/panel-actions";
 import { usePanelT } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
 const AdminSharing = () => {
   const { GRANTS } = usePanelData();
+
+  // Revoking sets the state and keeps the row: "who could see this in August?"
+  // is a question a farmer asks later, and a deleted row cannot answer it. A
+  // statutory grant has no revoke button at all - consent is the owner's to
+  // withdraw, a reporting duty is not - and the API refuses one anyway.
+  const revoke = useAction(
+    (id: string) => api.post(`/governance/grants/${id}/revoke/`),
+    { success: "act_revoked", capability: "administer" },
+  );
   const { t } = usePanelT();
 
   return (
@@ -52,8 +63,13 @@ const AdminSharing = () => {
               {g.by === "g_by_law" ? (
                 <span className="t-xs muted-2">—</span>
               ) : (
-                <Btn sm cls="btn-q">
-                  {t("ag_revoke")}
+                <Btn
+                  sm
+                  cls="btn-q"
+                  disabled={revoke.disabled || g.st !== "active"}
+                  onClick={() => void revoke.run(g.id)}
+                >
+                  {g.st === "active" ? t("ag_revoke") : t(`s_${g.st}`)}
                 </Btn>
               )}
             </td>

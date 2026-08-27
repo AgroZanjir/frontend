@@ -55,20 +55,37 @@ Where the pieces live:
 | `src/lib/panel-types.ts` | the view models the screens are written against |
 | `src/lib/panel-fixtures.ts` | the same dataset, as the render tests' double |
 | `src/lib/public-api.ts` | the public panel's own data: no session, one open endpoint |
+| `src/lib/panel-actions.tsx` | `useAction` and the toast stack: every write on the panels |
 | `src/styles/brand.css` | the brand layer: one palette and one pair of typefaces, which both design systems map onto |
 | `src/styles/panels.css` | the operator design system, ported from the prototype |
 | `src/components/panel/*` | the shared components: stats, pills, tables, charts |
 | `src/components/layout/PanelShell.tsx` | sidebar, breadcrumb, demo bar |
 | `src/pages/panels/auth/PanelAuth.tsx` | the OneID gate and the waiting screen |
 
-Seven things worth knowing before changing them:
+Eight things worth knowing before changing them:
 
-1. **The data comes from the API, through one seam.** Every screen reads
+1. **Every write goes through `useAction`.** It owns the four questions each
+   form would otherwise answer for itself: is it running, did it work, why did
+   it not, and what does the screen show now. The last one matters most - it
+   reloads the dataset on success, so the table behind a form is right before
+   the toast has faded.
+
+   It also takes the capability the endpoint requires and disables the button
+   without it. The API is still the authority and refuses either way; naming it
+   in the screen is what stops a lab approver being shown an observation form
+   that can only ever fail.
+
+   The failure text is the API's own words. A refused dispatch names the
+   lender; a refused placement names the zone's capacity; a refused declaration
+   names the documents. Replacing that with "something went wrong" would throw
+   away the only part of the response worth reading.
+
+2. **The data comes from the API, through one seam.** Every screen reads
    `usePanelData()`; the provider loads the dataset once per session and
    `panel-api.ts` is the only file that knows the backend's field names.
    Grams become kilograms and minor units become sum there, and nowhere else.
    `useRefreshPanelData()` invalidates it after a write.
-2. **A panel is a portal, and the sidebar names it - it is not a switcher.**
+3. **A panel is a portal, and the sidebar names it - it is not a switcher.**
    The prototype states it that way and it is a permission statement as much
    as a design one: offering a hub operator the bank's portal, or the
    administration panel, implies an access the API would refuse. Someone who
@@ -77,13 +94,13 @@ Seven things worth knowing before changing them:
    their organisation's type - working at the operator's organisation is not
    the same as running the platform.
 
-3. **The public panel has no session and its own data path.** Panel 07 is the
+4. **The public panel has no session and its own data path.** Panel 07 is the
    one anybody can open; it reads `lib/public-api.ts` against the two open
    endpoints, and `App` deliberately does not wrap it in `PanelDataProvider`.
    Asking for a token-scoped dataset there left an anonymous visitor looking at
    a spinner for ever.
 
-4. **On a phone both navigations collapse behind one button.** Seven website
+5. **On a phone both navigations collapse behind one button.** Seven website
    links and ten panel sections do not fit on 390px, and wrapping them cost a
    quarter of the screen before the reader saw anything. The website's turn
    into a sheet under the bar (`.nav-drop`, which is `display: contents` on a
@@ -92,7 +109,7 @@ Seven things worth knowing before changing them:
    route change, on Escape, on a tap outside, and when the viewport grows past
    the breakpoint.
 
-5. **There are two design systems and one brand layer.** `brand.css` declares
+6. **There are two design systems and one brand layer.** `brand.css` declares
    the identity - institutional navy `#0a2540` with gold `#a8801f`, Source
    Serif 4 for headings over Inter for reading text, 14px radii, navy-tinted
    shadows - as `--b-*` tokens and styles nothing. The website's token block
@@ -106,11 +123,11 @@ Seven things worth knowing before changing them:
    the semantic colours: a panel's green means *in regime* and its red means
    *excursion*, and those must not become navy and gold.
 
-6. **The design system is not Tailwind.** `panels.css` carries the prototype's
+7. **The design system is not Tailwind.** `panels.css` carries the prototype's
    tokens and classes verbatim; `index.css` points shadcn's variables at the
    same palette so the carried-over auth screens do not look like a second
    product. Change a colour in `panels.css`, never in `index.css`.
-7. **The sign-in is real; OneID is not yet.** `POST /auth/oneid/` returns a
+8. **The sign-in is real; OneID is not yet.** `POST /auth/oneid/` returns a
    real JWT and sets the refresh cookie. Until OneID itself is connected the
    backend resolves a seeded *persona* instead of a state identity and returns
    `adapter: "stub"`, which the sign-in screen prints. The access token lives
@@ -204,10 +221,13 @@ records can be trusted.
 - **Real OneID.** The gate, the session, the token and the refresh cookie are
   all real. What is not real is the identity behind them: the backend's stub
   adapter resolves a seeded person, and says so in every session it issues.
-- **Writes from most screens.** The API has the endpoints - grading, placement,
-  dispatch, liens, claims, declarations - and the spine refuses what it should.
-  Most screens still only read; wiring each form to its endpoint is the next
-  piece of work, and `useRefreshPanelData()` is what they call afterwards.
+- **Writes from the screens that have no form.** The capture and decision
+  screens post to the API; the ones that are lists or read-only views do not,
+  because there is nothing on them to send. What is genuinely missing is
+  narrower than it was: photographs (the QC and observation screens show the
+  slots and cannot upload yet), an adjuster's own figure on a claim, and a
+  depart/deliver control on the transit screen - the endpoints exist for all
+  three.
 
 ## What is left of the AgroConnect fork
 

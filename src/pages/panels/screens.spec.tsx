@@ -22,6 +22,9 @@ import { describe, expect, it } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { PanelDataProvider } from "@/lib/panel-data";
+// Every capture screen reports what it did; the provider is part of the panel
+// environment, exactly like the dataset is.
+import { PanelToastProvider } from "@/lib/panel-actions";
 import { FIXTURES } from "@/lib/panel-fixtures";
 import { PANELS, panelScreens } from "@/lib/panels";
 import { SCREENS } from "@/pages/panels/registry";
@@ -45,13 +48,15 @@ describe("panel screens", () => {
     const Screen = SCREENS[id];
     const html = renderToString(
       <QueryClientProvider client={new QueryClient()}>
-        <PanelDataProvider value={FIXTURES}>
-          <StaticRouter location={path}>
-            <Routes>
-              <Route path={path} element={<Screen />} />
-            </Routes>
-          </StaticRouter>
-        </PanelDataProvider>
+        <PanelToastProvider>
+          <PanelDataProvider value={FIXTURES}>
+            <StaticRouter location={path}>
+              <Routes>
+                <Route path={path} element={<Screen />} />
+              </Routes>
+            </StaticRouter>
+          </PanelDataProvider>
+        </PanelToastProvider>
       </QueryClientProvider>,
     );
     expect(html.length).toBeGreaterThan(0);

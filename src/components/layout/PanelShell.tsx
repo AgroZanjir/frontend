@@ -22,6 +22,12 @@ import PanelIcon from "@/components/panel/icons";
 import BrandMark from "@/components/panel/brand";
 import { usePanelT } from "@/lib/panel-format";
 import { SCREEN_LABEL, panelByPath, type PanelDef } from "@/lib/panels";
+import { useQuery } from "@tanstack/react-query";
+
+import api from "@/lib/api";
+import PanelToasts from "@/components/panel/toast";
+import { PanelToastProvider, useAction } from "@/lib/panel-actions";
+import { usePanelData } from "@/lib/panel-data";
 import { signOut, usePanelPersona } from "@/lib/panel-session";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
@@ -197,6 +203,188 @@ const PanelSidebar = ({ panel }: { panel: PanelDef }) => {
   );
 };
 
+/* ===== search ===== */
+
+/**
+ * The box in the top bar. It was decoration: a magnifier and the word
+ * "Search…" that did nothing when clicked.
+ *
+ * It searches what the caller can already see - the endpoint scopes lots the
+ * same way the tables do - so it cannot become a way around `party_scope`.
+ * Results are keyed to a screen each kind opens on.
+ */
+const PanelSearch = ({ panel }: { panel: PanelDef }) => {
+  const { t } = usePanelT();
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+
+  // 250ms after the last keystroke, not on every one: this runs five queries
+  // per call and a hub manager types faster than that.
+  const debounced = useDebounced(query, 250);
+  const { data } = useQuery({
+    queryKey: ["panel-search", debounced],
+    queryFn: () =>
+      api.get<{ results: SearchHit[] }>(
+        `/panels/search/?q=${encodeURIComponent(debounced)}`,
+      ),
+    enabled: debounced.trim().length >= 2,
+    staleTime: 20_000,
+  });
+  const hits = data?.results ?? [];
+
+  useEffect(() => {
+    const close = (e: PointerEvent) => {
+      if (!box.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", close);
+    return () => document.removeEventListener("pointerdown", close);
+  }, []);
+
+  const go = (hit: SearchHit) => {
+    setOpen(false);
+    setQuery("");
+    // The lot passport is reachable from four panels; open the one belonging
+    // to the panel the reader is standing in rather than sending them
+    // somewhere their role may not go.
+    navigate(hit.path === "/lot" ? `${panel.path}/lot` : hit.path);
+  };
+
+  return (
+    <div className="topsearch-wrap" ref={box}>
+      <div className="topsearch">
+        <PanelIcon name="srch" className="" />
+        <input
+          value={query}
+          placeholder={t("search")}
+          aria-label={t("srch_hint")}
+          onFocus={() => setOpen(true)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setOpen(false);
+            if (e.key === "Enter" && hits[0]) go(hits[0]);
+          }}
+        />
+      </div>
+      {open && debounced.trim().length >= 2 && (
+        <div className="srch-drop">
+          {hits.length === 0 ? (
+            <div className="srch-empty">{t("srch_none")}</div>
+          ) : (
+            hits.map((hit) => (
+              <button
+                type="button"
+                key={`${hit.kind}-${hit.code}`}
+                className="srch-hit"
+                onClick={() => go(hit)}
+              >
+                <span className="srch-k">{t(`sk_${hit.kind}`)}</span>
+                <span className="mono">{hit.label}</span>
+                <span className="t-xs muted-2">{hit.detail}</span>
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface SearchHit {
+  kind: string;
+  code: string;
+  label: string;
+  detail: string;
+  path: string;
+}
+
+/** Wait for the typing to stop before asking. */
+const useDebounced = (value: string, ms: number) => {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSettled(value), ms);
+    return () => window.clearTimeout(timer);
+  }, [value, ms]);
+  return settled;
+};
+
+/* ===== the bell ===== */
+
+/**
+ * What the dot on the bell was promising.
+ *
+ * The notifications were already loaded with the rest of the dataset and had
+ * nowhere to go. Reading one marks it read for the person who read it -
+ * including a platform-wide notice, which gets a per-person copy rather than
+ * being hidden from everybody at once.
+ */
+const PanelBell = () => {
+  const { t } = usePanelT();
+  const { NOTIFS } = usePanelData();
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  const unread = NOTIFS.filter((n) => !n.read);
+
+  const read = useAction(
+    (id: string) => api.post(`/panels/notifications/${id}/read/`),
+    { success: "act_saved" },
+  );
+
+  useEffect(() => {
+    const close = (e: PointerEvent) => {
+      if (!box.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", close);
+    return () => document.removeEventListener("pointerdown", close);
+  }, []);
+
+  return (
+    <div className="bell-wrap" ref={box}>
+      <button
+        className="iconbtn"
+        aria-label={t("nt_exc")}
+        aria-expanded={open}
+        onClick={() => setOpen((was) => !was)}
+      >
+        <PanelIcon name="bell" className="" />
+        {unread.length > 0 && <span className="dot" />}
+      </button>
+      {open && (
+        <div className="bell-drop">
+          {NOTIFS.length === 0 ? (
+            <div className="srch-empty">{t("nt_empty")}</div>
+          ) : (
+            NOTIFS.map((n) => (
+              <button
+                type="button"
+                key={n.id}
+                className={cn("bell-row", n.read && "read")}
+                disabled={read.busy || n.read}
+                onClick={() => void read.run(n.id)}
+              >
+                <span
+                  className={`pill p-${n.lvl === "crit" ? "crit" : n.lvl === "warn" ? "warn" : n.lvl === "good" ? "good" : "info"}`}
+                >
+                  <span className="dot" />
+                </span>
+                <span style={{ minWidth: 0 }}>
+                  <span className="bell-t">{t(n.k)}</span>
+                  <span className="bell-s mono">{n.v}</span>
+                </span>
+                <span className="t-xs muted-2">{n.at}</span>
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 /* ===== top bar ===== */
 
 const TopBar = ({
@@ -232,14 +420,8 @@ const TopBar = ({
         <b>{t(label)}</b>
       </div>
       <div className="top-r">
-        <div className="topsearch">
-          <PanelIcon name="srch" className="" />
-          <span>{t("search")}</span>
-        </div>
-        <button className="iconbtn" aria-label={t("nt_exc")}>
-          <PanelIcon name="bell" className="" />
-          <span className="dot" />
-        </button>
+        <PanelSearch panel={panel} />
+        <PanelBell />
       </div>
     </div>
   );
@@ -288,31 +470,36 @@ const PanelShell = () => {
   if (!panel) return null;
 
   return (
-    <div className={cn("appwrap", open && "drawer-open")}>
-      <DemoBar />
-      <div className="frame">
-        <PanelSidebar panel={panel} />
-        {/* Only ever visible on a phone, and only while the drawer is. */}
-        <button
-          type="button"
-          className="side-scrim"
-          tabIndex={open ? 0 : -1}
-          aria-hidden={!open}
-          aria-label={t("w_menu_close")}
-          onClick={() => setOpen(false)}
-        />
-        <div className="main">
-          <TopBar
-            panel={panel}
-            onMenu={() => setOpen((was) => !was)}
-            open={open}
+    // Everything below can report what it did: the toast stack, the bell in
+    // the top bar and every form on every screen inside the outlet.
+    <PanelToastProvider>
+      <div className={cn("appwrap", open && "drawer-open")}>
+        <DemoBar />
+        <PanelToasts />
+        <div className="frame">
+          <PanelSidebar panel={panel} />
+          {/* Only ever visible on a phone, and only while the drawer is. */}
+          <button
+            type="button"
+            className="side-scrim"
+            tabIndex={open ? 0 : -1}
+            aria-hidden={!open}
+            aria-label={t("w_menu_close")}
+            onClick={() => setOpen(false)}
           />
-          <div className="body">
-            <Outlet />
+          <div className="main">
+            <TopBar
+              panel={panel}
+              onMenu={() => setOpen((was) => !was)}
+              open={open}
+            />
+            <div className="body">
+              <Outlet />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </PanelToastProvider>
   );
 };
 

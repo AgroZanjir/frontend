@@ -7,12 +7,25 @@
  */
 
 import { Btn, PageHead, Tag, Tbl } from "@/components/panel/primitives";
+import api from "@/lib/api";
+import { useAction } from "@/lib/panel-actions";
 import { usePanelT, daysLeft } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
 const ExportSourcing = () => {
   const { FARMS, LOTS, PRODUCTS, findZone } = usePanelData();
   const { t, nf, pn } = usePanelT();
+
+  // Reserving moves a lot out of available stock without moving the goods: it
+  // stays where it is, stays pledged if it is pledged, and somebody has now
+  // spoken for it.
+  const reserve = useAction(
+    (code: string) => api.post(`/lots/${code}/reserve/`),
+    {
+      success: "act_reserved",
+      capability: "transact",
+    },
+  );
   const available = LOTS.filter((l) => ["stored", "reserved"].includes(l.st));
 
   return (
@@ -74,7 +87,12 @@ const ExportSourcing = () => {
                 {l.st === "reserved" ? (
                   <Tag cls="p-warn">{t("s_reserved")}</Tag>
                 ) : (
-                  <Btn sm cls="btn-p">
+                  <Btn
+                    sm
+                    cls="btn-p"
+                    disabled={reserve.disabled}
+                    onClick={() => void reserve.run(l.c)}
+                  >
                     {t("xs_reserve")}
                   </Btn>
                 )}

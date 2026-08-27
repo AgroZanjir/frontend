@@ -416,6 +416,7 @@ export const loadPanelData = async (): Promise<PanelData> => {
       lender: a.lender,
     })),
     LIENS: liens.results.map((l: any): Lien => ({
+      id: l.id,
       lot: l.lot,
       fa: l.application,
       amt: major(l.amount_minor, l.currency),
@@ -457,6 +458,8 @@ export const loadPanelData = async (): Promise<PanelData> => {
       ref: d.reference || null,
     })),
     NOTIFS: notifications.results.map((n: any): Notif => ({
+      id: n.id,
+      read: Boolean(n.read_at),
       lvl: n.level,
       k: n.message_key,
       v: n.subject,
@@ -570,6 +573,7 @@ const toExcursion = (excursion: any): Excursion => {
       lots: [],
       sensor: "",
       trace: [],
+      resolved: false,
     };
   }
   return {
@@ -585,6 +589,7 @@ const toExcursion = (excursion: any): Excursion => {
     lots: excursion.lots ?? [],
     sensor: excursion.sensor_id,
     trace: excursion.trace ?? [],
+    resolved: Boolean(excursion.resolved),
   };
 };
 
@@ -696,6 +701,7 @@ const loadAdministration = async (): Promise<AdminData> => {
     return {
       ORGS: orgs,
       USERS: users.results.map((u) => ({
+        id: u.id,
         n: u.name,
         orgCode: u.org,
         org: 0,
@@ -715,6 +721,7 @@ const loadAdministration = async (): Promise<AdminData> => {
         k: a.capability,
       })),
       GRANTS: grants.results.map((g) => ({
+        id: g.id,
         org: g.org,
         scope: g.scope_key,
         fields: g.fields_key,

@@ -11,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 
 import { Btn, PageHead, Tag, Tbl } from "@/components/panel/primitives";
 import { useLabels } from "@/pages/panels/admin/helpers";
+import api from "@/lib/api";
+import { useAction } from "@/lib/panel-actions";
 import { usePanelT } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
@@ -23,6 +25,11 @@ const STATUS_CLASS: Record<string, string> = {
 
 const AdminUsers = () => {
   const { roleLabelKey } = useLabels();
+  const setStatus = useAction(
+    (id: string, status: string) =>
+      api.post(`/users/${id}/status/`, { status }),
+    { success: "act_status", capability: "administer" },
+  );
   const { ORGS, USERS } = usePanelData();
   const { t } = usePanelT();
   const navigate = useNavigate();
@@ -90,8 +97,21 @@ const AdminUsers = () => {
               </span>
             </td>
             <td className="r">
-              <Btn sm cls="btn-q">
-                {t("open")}
+              {/* Suspending is not deleting. The person keeps their history,
+                  their audit trail keeps its actor, and the account stops
+                  opening. Restoring is the same call the other way. */}
+              <Btn
+                sm
+                cls="btn-q"
+                disabled={setStatus.disabled}
+                onClick={() =>
+                  void setStatus.run(
+                    u.id,
+                    u.st === "suspended" ? "active" : "suspended",
+                  )
+                }
+              >
+                {u.st === "suspended" ? t("au_restore") : t("au_suspend")}
               </Btn>
             </td>
           </tr>

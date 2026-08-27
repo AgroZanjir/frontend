@@ -7,12 +7,22 @@
  */
 
 import { Btn, Note, PageHead, Pill, Tbl } from "@/components/panel/primitives";
+import api from "@/lib/api";
+import { useAction } from "@/lib/panel-actions";
 import { usePanelT } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
 const BankLiens = () => {
   const { LIENS } = usePanelData();
   const { t, money } = usePanelT();
+
+  // Releasing is an event, never a deletion: the row stays and gains a release
+  // date, and the lot's own log records it. "Was this ever pledged?" is the
+  // question a bank asks six months later.
+  const release = useAction(
+    (id: string) => api.post(`/finance/liens/${id}/release/`),
+    { success: "act_released", capability: "decide" },
+  );
 
   return (
     <>
@@ -47,7 +57,12 @@ const BankLiens = () => {
             </td>
             <td className="r">
               {x.st === "active" ? (
-                <Btn sm cls="btn-p">
+                <Btn
+                  sm
+                  cls="btn-p"
+                  disabled={release.disabled}
+                  onClick={() => void release.run(x.id)}
+                >
                   {t("li_release")}
                 </Btn>
               ) : (
