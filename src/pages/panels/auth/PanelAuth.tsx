@@ -21,7 +21,12 @@ import { DemoBar, LangSeg, ThemeSeg } from "@/components/layout/PanelShell";
 import { Btn, KV, Note, PanelCard, Tag } from "@/components/panel/primitives";
 import { usePanelT } from "@/lib/panel-format";
 import { getPanel } from "@/lib/panels";
-import { fetchPersonas, signIn, signInToPanel } from "@/lib/panel-session";
+import {
+  fetchPersonas,
+  signIn,
+  signInToPanel,
+  signInWithPassword,
+} from "@/lib/panel-session";
 import { ApiError } from "@/lib/api";
 
 const AuthFrame = ({ children }: { children: React.ReactNode }) => (
@@ -56,6 +61,23 @@ export const PanelSignIn = ({ panelId }: { panelId: string }) => {
   });
   const personas = data?.personas ?? [];
   const [persona, setPersona] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const enterWithPassword = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      await signInWithPassword(username.trim(), password);
+      navigate(panel.path);
+    } catch (exc) {
+      setError(
+        exc instanceof ApiError ? exc.message : ((exc as Error).message ?? ""),
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const enter = async (who?: string) => {
     setBusy(true);
@@ -153,17 +175,48 @@ export const PanelSignIn = ({ panelId }: { panelId: string }) => {
             <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
           </div>
 
-          <div className="field">
-            <label htmlFor="phone">{t("lg_phone")}</label>
-            <input
-              id="phone"
-              className="inp mono"
-              defaultValue="+998 __ ___ __ __"
-            />
-          </div>
-          <Btn style={{ justifyContent: "center", padding: 9 }} disabled>
-            {t("confirm")}
-          </Btn>
+          {/* The way in while OneID is not connected, and the way in when it
+              is connected and unavailable - which it will be. The accounts
+              are created by `manage.py seed_accounts`; the platform stores a
+              hash and never the password. */}
+          <form
+            className="stack"
+            style={{ gap: 10 }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              void enterWithPassword();
+            }}
+          >
+            <div className="field">
+              <label htmlFor="username">{t("lg_user")}</label>
+              <input
+                id="username"
+                className="inp mono"
+                autoComplete="username"
+                placeholder="hub.manager"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="password">{t("lg_pw")}</label>
+              <input
+                id="password"
+                className="inp"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <Btn
+              type="submit"
+              style={{ justifyContent: "center", padding: 9 }}
+              disabled={busy || !username || !password}
+            >
+              {t("lg_signin")}
+            </Btn>
+          </form>
 
           <p
             className="t-xs muted-2"

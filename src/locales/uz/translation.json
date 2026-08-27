@@ -697,7 +697,7 @@
     "lg_oneid": "OneID orqali kirish",
     "lg_or": "yoki",
     "lg_phone": "Telefon raqami bilan",
-    "lg_note": "OneID — davlat xizmatlarining yagona identifikatsiya tizimi. Alohida parol talab qilinmaydi.",
+    "lg_note": "OneID — davlat xizmatlari uchun yagona identifikatsiya tizimi. U ulanmaguncha administrator bergan foydalanuvchi nomi va parol bilan kiring.",
     "nt_exc": "Rejim buzilishi aniqlandi",
     "nt_win": "Sotuv oynasi tugayapti",
     "nt_fa": "Kredit arizasi ko‘rib chiqilmoqda",
@@ -1301,6 +1301,9 @@
     "ci_broken": "Zanjir buzilgan — kredit bermang",
     "ci_checked": "Qayta tekshirildi:",
     "w_menu_open": "Menyuni ochish",
-    "w_menu_close": "Menyuni yopish"
+    "w_menu_close": "Menyuni yopish",
+    "lg_user": "Foydalanuvchi nomi",
+    "lg_pw": "Parol",
+    "lg_signin": "Kirish"
   }
 }

@@ -719,7 +719,7 @@
     "lg_oneid": "Sign in with OneID",
     "lg_or": "or",
     "lg_phone": "Use a phone number",
-    "lg_note": "OneID is the unified identification system for government services. No separate password is needed.",
+    "lg_note": "OneID is the unified identification system for government services. Until it is connected, sign in with the username and password your administrator issued.",
     "nt_exc": "Condition excursion detected",
     "nt_win": "Sales window closing",
     "nt_fa": "Credit application under review",
@@ -1323,6 +1323,9 @@
     "ci_broken": "Chain broken — do not lend against this",
     "ci_checked": "Re-verified at",
     "w_menu_open": "Open menu",
-    "w_menu_close": "Close menu"
+    "w_menu_close": "Close menu",
+    "lg_user": "Username",
+    "lg_pw": "Password",
+    "lg_signin": "Sign in"
   }
 }

@@ -61,6 +61,26 @@ export const signIn = async (identity: {
   return session;
 };
 
+/**
+ * Sign in with a username and a password.
+ *
+ * The other door, and not a lesser one: it is how the platform stays usable
+ * when the state identity provider is down, and it is how a pilot runs before
+ * OneID is connected at all. Same session, same token, same cookie - only the
+ * proof of who you are differs.
+ */
+export const signInWithPassword = async (
+  username: string,
+  password: string,
+): Promise<SessionPayload> => {
+  const session = await api.post<SessionPayload>("/auth/password/", {
+    username,
+    password,
+  });
+  userStore.getState().applySession(session);
+  return session;
+};
+
 /** Sign in as the person the panel opens as. */
 export const signInToPanel = (panel: PanelDef) =>
   signIn({ persona: PERSONAS[panel.id] ?? "" });

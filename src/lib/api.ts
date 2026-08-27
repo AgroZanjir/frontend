@@ -94,7 +94,11 @@ const send = async (
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   let response = await send(path, init, userStore.getState().token);
 
-  if (response.status === 401) {
+  // A 401 from the auth endpoints means the credentials were wrong, not that a
+  // session expired. Retrying them behind a refresh would replace the
+  // backend's "those credentials do not match an account" with "session
+  // expired", which is a lie to someone who has simply mistyped a password.
+  if (response.status === 401 && !path.startsWith("/auth/")) {
     const token = await refreshSession();
     if (token) {
       response = await send(path, init, token);
