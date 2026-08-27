@@ -1,4 +1,4 @@
-# Agro Zanjir Digital — web
+# Agro Zanjir Digital — frontend
 
 Vite + React + TypeScript. Originally forked from AgroConnect; what remains of
 that fork is listed at the bottom, and it is not much.
@@ -14,7 +14,7 @@ npm run dev          # http://localhost:5173
 endpoints from it and falls back to its shipped figures if it cannot:
 
 ```sh
-cd ../backend && .venv/bin/python manage.py runserver 8000
+cd ../backend && .venv/bin/python manage.py runserver 8000   # the backend repository
 ```
 
 | Command | What it does |
@@ -236,3 +236,13 @@ Kept, and still worth keeping:
   in-memory token, but the same shape
 - `components/ProtectedRoute.tsx` — the module guard; the panels have their own
   in `components/PanelGate.tsx`
+
+## The other two repositories
+
+This is one of three. They are deployed together and versioned apart:
+
+| Repository | What it is |
+| --- | --- |
+| [AgroZanjir/backend](https://github.com/AgroZanjir/backend) | Django 6 + DRF: the lot registry, the event log, the six clusters and the ports |
+| [AgroZanjir/frontend](https://github.com/AgroZanjir/frontend) | Vite + React: the public website and the eight operator panels |
+| [AgroZanjir/infra](https://github.com/AgroZanjir/infra) | How the two are served: nginx, gunicorn, PostgreSQL, the deployment sequence |
