@@ -370,6 +370,7 @@ export const findArticle = (id: string): NewsItem | undefined =>
 export const SHOWCASE_LOT = {
   code: "AZ-2026-SMQ-0412",
   product: "melon",
+  productName: { uz: "Qovun", ru: "Дыня", en: "Melon" },
   zone: "Z-ZEROCO-01",
   netKg: 4200,
   sellBy: "2026-10-06",

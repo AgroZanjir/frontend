@@ -1,0 +1,135 @@
+/* ===================================================================
+   THE BRAND LAYER
+
+   One palette, one pair of typefaces, one set of shapes - institutional
+   navy and gold on white, the language of the Konglomerat platform this
+   product now sits beside.
+
+   Nothing in this file styles anything. It declares tokens, and the two
+   design systems map their own names onto them:
+
+     styles/site.css    the public website  - mapped
+     styles/panels.css  the operator panels - not yet
+
+   That indirection is the point. The panels carry the approved
+   prototype's own palette today; switching them over is remapping their
+   token block against these names, not editing forty-four screens. The
+   website was remapped exactly that way, in about twenty lines.
+
+   Two conventions:
+
+     --b-*        a brand token. Only the two design systems read these;
+                  a component never should.
+     :root.dark   the class ThemeProvider sets. Both themes are declared
+                  here so a mapped sheet gets dark mode for free.
+   =================================================================== */
+
+:root {
+  /* --- type ---------------------------------------------------------
+     Source Serif 4 sets every heading; Inter carries the reading text.
+     The pairing is the loudest thing about this identity, and the one
+     that survives being seen at a distance. Mono is unchanged - it sets
+     lot codes and TINs, which are read back to someone over a phone. */
+  --b-sans:
+    "Inter", "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --b-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --b-mono: "IBM Plex Mono", "SF Mono", Consolas, monospace;
+
+  /* --- institutional navy and gold ---------------------------------- */
+  --b-navy: #0a2540;
+  --b-navy-2: #103a66;
+  --b-navy-3: #1c4e82;
+  --b-gold: #a8801f;
+  --b-gold-soft: #c79a3a;
+
+  /* --- ground and surfaces ------------------------------------------ */
+  --b-bg: #ffffff;
+  --b-bg-2: #f5f7fb;
+  --b-surface: #ffffff;
+  --b-surface-2: #eef2f8;
+  --b-border: #e3e8ef;
+  --b-border-strong: #d2dae5;
+
+  /* --- ink ----------------------------------------------------------- */
+  --b-ink: #16202b;
+  --b-text: #33414f;
+  --b-dim: #697586;
+  --b-faint: #8791a0;
+  /* On a navy plane, where the ink inverts. */
+  --b-on-navy: #f2f6fb;
+  --b-on-navy-2: #9fb2c9;
+
+  /* --- state --------------------------------------------------------- */
+  --b-danger: #e25a4a;
+  --b-warning: #c79a3a;
+  --b-success: #127a4a;
+  /* The cold chain's own blue. A data colour, not a brand colour: the
+     ZEROCO series is this blue on every chart in the product and must
+     not drift with the palette. */
+  --b-cold: #2a78d6;
+  --b-cold-lift: #5aa0f0;
+
+  /* --- depth and shape ----------------------------------------------- */
+  --b-grad: linear-gradient(135deg, #0a2540 0%, #a8801f 130%);
+  --b-grad-soft: linear-gradient(
+    135deg,
+    rgba(10, 37, 64, 0.06),
+    rgba(168, 128, 31, 0.09)
+  );
+  --b-shadow-sm: 0 1px 2px rgba(10, 37, 64, 0.06);
+  --b-shadow: 0 14px 40px -22px rgba(10, 37, 64, 0.35);
+  --b-shadow-lg:
+    0 1px 2px rgba(10, 37, 64, 0.05), 0 18px 48px -24px rgba(10, 37, 64, 0.4);
+  --b-glow: 0 10px 24px -12px rgba(10, 37, 64, 0.5);
+  /* The tint every shadow and scrim is mixed from, so nothing in the
+     product casts a grey shadow onto a navy-biased white. */
+  --b-shade: 10, 37, 64;
+
+  --b-radius: 14px;
+  --b-radius-sm: 10px;
+  --b-radius-lg: 22px;
+}
+
+:root.dark {
+  /* Dark is not the light palette inverted: navy has to lift off the
+     ground rather than sink into it, so the accent becomes the brighter
+     blue and the ground goes deeper than any surface. */
+  --b-navy: #2168bd;
+  --b-navy-2: #2d77d0;
+  --b-navy-3: #3f8ae0;
+  --b-gold: #d9af55;
+  --b-gold-soft: #e7c578;
+
+  --b-bg: #0a1322;
+  --b-bg-2: #0e1828;
+  --b-surface: #101b2e;
+  --b-surface-2: #16243c;
+  --b-border: #263348;
+  --b-border-strong: #33445f;
+
+  --b-ink: #eef3fa;
+  --b-text: #c4cfdd;
+  --b-dim: #8d9ab0;
+  --b-faint: #6b7890;
+  --b-on-navy: #eef3fa;
+  --b-on-navy-2: #9aa9c0;
+
+  --b-danger: #ff6b5a;
+  --b-warning: #e7c578;
+  --b-success: #3fd693;
+  --b-cold: #4f96e8;
+  --b-cold-lift: #7db4f2;
+
+  --b-grad: linear-gradient(135deg, #3f8ae0 0%, #d9af55 130%);
+  --b-grad-soft: linear-gradient(
+    135deg,
+    rgba(63, 138, 224, 0.16),
+    rgba(217, 175, 85, 0.14)
+  );
+  --b-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --b-shadow: 0 16px 44px -22px rgba(0, 0, 0, 0.75);
+  --b-shadow-lg:
+    0 2px 4px rgba(0, 0, 0, 0.5), 0 20px 52px -24px rgba(0, 0, 0, 0.8);
+  --b-glow: 0 12px 30px -14px rgba(0, 0, 0, 0.7);
+  --b-shade: 0, 0, 0;
+}

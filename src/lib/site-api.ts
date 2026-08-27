@@ -21,6 +21,8 @@ import { SHOWCASE_LOT, SHOWCASE_TRIAL } from "@/lib/site-data";
 export interface ShowcaseLot {
   code: string;
   product: string;
+  /** The product's name in each language: the public panel has no catalogue. */
+  productName: Record<string, string>;
   zone: string | null;
   netKg: number;
   sellBy: string | null;
@@ -56,6 +58,11 @@ export const useShowcaseLot = (code = SHOWCASE_LOT.code): ShowcaseLot => {
   return {
     code: data.lot.code,
     product: data.lot.product,
+    productName: {
+      uz: data.product?.name_uz ?? SHOWCASE_LOT.productName.uz,
+      ru: data.product?.name_ru ?? SHOWCASE_LOT.productName.ru,
+      en: data.product?.name_en ?? SHOWCASE_LOT.productName.en,
+    },
     zone: data.lot.zone,
     netKg: Math.round(data.lot.net_weight_g / 1000),
     sellBy: data.lot.sell_by,

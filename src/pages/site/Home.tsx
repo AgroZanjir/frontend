@@ -24,7 +24,7 @@ import { CHAIN12, PRODUCE } from "@/lib/site-data";
 const HERO_TEMPS = [0.9, 0.7, 0.8, 0.6, 0.5, 0.7, 0.6, 0.4, 0.5, 0.6, 0.5, 0.6];
 
 const HeroCard = () => {
-  const { t, nf, pn } = usePanelT();
+  const { t, nf, lang } = usePanelT();
   const l = useShowcaseLot();
   const left = l.sellBy ? daysLeft({ u: l.sellBy } as never) : null;
 
@@ -38,7 +38,7 @@ const HeroCard = () => {
       <div className="hc-rows">
         <div className="hc-r">
           <span>{t("w_hc_prod")}</span>
-          <b>{pn(l.product as never)}</b>
+          <b>{l.productName[lang] ?? l.product}</b>
         </div>
         <div className="hc-r">
           <span>{t("w_hc_zone")}</span>
@@ -133,7 +133,7 @@ const Home = () => {
 
           <div className="chain-key">
             <span>
-              <i style={{ background: "var(--primary)" }} />
+              <i style={{ background: "var(--acc)" }} />
               {t("w_key_live")}
             </span>
             <span>
@@ -141,7 +141,7 @@ const Home = () => {
               {t("w_key_zero")}
             </span>
             <span>
-              <i style={{ background: "var(--deep-2)" }} />
+              <i style={{ background: "var(--deep-3)" }} />
               {t("w_key_next")}
             </span>
           </div>

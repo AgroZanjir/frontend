@@ -54,12 +54,13 @@ Where the pieces live:
 | `src/lib/panel-types.ts` | the view models the screens are written against |
 | `src/lib/panel-fixtures.ts` | the same dataset, as the render tests' double |
 | `src/lib/public-api.ts` | the public panel's own data: no session, one open endpoint |
-| `src/styles/panels.css` | the design system, ported from the prototype |
+| `src/styles/brand.css` | the brand layer: one palette and one pair of typefaces, which both design systems map onto |
+| `src/styles/panels.css` | the operator design system, ported from the prototype |
 | `src/components/panel/*` | the shared components: stats, pills, tables, charts |
 | `src/components/layout/PanelShell.tsx` | sidebar, breadcrumb, demo bar |
 | `src/pages/panels/auth/PanelAuth.tsx` | the OneID gate and the waiting screen |
 
-Six things worth knowing before changing them:
+Seven things worth knowing before changing them:
 
 1. **The data comes from the API, through one seam.** Every screen reads
    `usePanelData()`; the provider loads the dataset once per session and
@@ -90,11 +91,25 @@ Six things worth knowing before changing them:
    route change, on Escape, on a tap outside, and when the viewport grows past
    the breakpoint.
 
-5. **The design system is not Tailwind.** `panels.css` carries the prototype's
+5. **There are two design systems and one brand layer.** `brand.css` declares
+   the identity - institutional navy `#0a2540` with gold `#a8801f`, Source
+   Serif 4 for headings over Inter for reading text, 14px radii, navy-tinted
+   shadows - as `--b-*` tokens and styles nothing. The website's token block
+   maps onto it in about twenty lines, which is the whole of what changed when
+   it took the Konglomerat look: no page, no component and no class name moved.
+
+   **The panels have not been mapped yet.** They still carry the approved
+   prototype's pine green, deliberately, and switching them over is remapping
+   the token block at the top of `panels.css` against the same `--b-*` names -
+   not editing forty-four screens. The one thing to check when that happens is
+   the semantic colours: a panel's green means *in regime* and its red means
+   *excursion*, and those must not become navy and gold.
+
+6. **The design system is not Tailwind.** `panels.css` carries the prototype's
    tokens and classes verbatim; `index.css` points shadcn's variables at the
    same palette so the carried-over auth screens do not look like a second
    product. Change a colour in `panels.css`, never in `index.css`.
-6. **The sign-in is real; OneID is not yet.** `POST /auth/oneid/` returns a
+7. **The sign-in is real; OneID is not yet.** `POST /auth/oneid/` returns a
    real JWT and sets the refresh cookie. Until OneID itself is connected the
    backend resolves a seeded *persona* instead of a state identity and returns
    `adapter: "stub"`, which the sign-in screen prints. The access token lives
