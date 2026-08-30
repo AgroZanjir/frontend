@@ -1758,3 +1758,399 @@ th.r {
   flex: none;
   align-self: flex-start;
 }
+
+/* ===================================================================
+   THE PANEL ASSISTANT
+
+   The operator product's own corner panel. Tokens from this sheet, not
+   the website's: pine green and the product's neutrals, IBM Plex, and
+   the tighter radii the panels use throughout - it has to look like a
+   part of the tool rather than a widget bolted onto it.
+
+   Squarer, quieter and more compact than the website's on purpose. The
+   website's has to be found by a stranger; this one is used by somebody
+   who is already working, and the loudest thing on an operator screen
+   should be the operator's data.
+   =================================================================== */
+.pai-dock {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* --- the launcher --------------------------------------------------- */
+.pai-launch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px 0 13px;
+  border: 1px solid var(--primary-2);
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-family: var(--f);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-3);
+  transition:
+    background 0.14s,
+    transform 0.14s;
+}
+.pai-launch:hover {
+  background: var(--primary-2);
+  transform: translateY(-1px);
+}
+.pai-launch:focus-visible {
+  outline: 2px solid var(--cool);
+  outline-offset: 3px;
+}
+.pai-launch svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+}
+.pai-dock.on .pai-launch-t {
+  display: none;
+}
+.pai-dock.on .pai-launch {
+  padding: 0;
+  width: 40px;
+  justify-content: center;
+}
+
+/* --- the panel ------------------------------------------------------ */
+.pai-panel {
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  max-width: calc(100vw - 28px);
+  /* Below the demo bar and clear of the top bar: an operator has to be
+     able to see which screen they are asking about. */
+  height: min(560px, calc(100vh - var(--demo-h, 34px) - var(--top-h) - 78px));
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-3);
+  overflow: hidden;
+}
+
+.pai-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 10px 11px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+.pai-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--ink);
+}
+.pai-title svg {
+  width: 15px;
+  height: 15px;
+  color: var(--primary);
+}
+.pai-sub {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.pai-x {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: 0.14s;
+}
+.pai-x:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+.pai-x svg {
+  width: 16px;
+  height: 16px;
+  transform: rotate(90deg);
+}
+
+.pai-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 13px 13px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* --- the empty state ------------------------------------------------ */
+.pai-lede {
+  margin: 0 0 11px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.pai-chips {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+.pai-chip {
+  padding: 8px 11px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-family: var(--f);
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: left;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: 0.14s;
+}
+.pai-chip:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+}
+
+/* --- one turn ------------------------------------------------------- */
+.pai-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 94%;
+}
+.pai-user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+.pai-who {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.pai-body {
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface-2);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink);
+  /* A pasted lot code is one long token; without this it widens the
+     panel past the viewport instead of wrapping. */
+  overflow-wrap: anywhere;
+}
+.pai-user .pai-body {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+.pai-bad .pai-body {
+  border-color: var(--warn);
+  background: var(--warn-soft);
+  color: var(--ink-2);
+}
+.pai-body p {
+  margin: 0;
+  /* The brief asks for prose and gets it, but an enumeration comes back
+     as one line per item. Without this they run together. */
+  white-space: pre-wrap;
+}
+.pai-body p + p {
+  margin-top: 8px;
+}
+
+.pai-wait {
+  display: flex;
+  gap: 4px;
+  padding: 3px 0;
+}
+.pai-wait i {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--ink-3);
+  animation: pai-pulse 1.1s ease-in-out infinite;
+}
+.pai-wait i:nth-child(2) {
+  animation-delay: 0.16s;
+}
+.pai-wait i:nth-child(3) {
+  animation-delay: 0.32s;
+}
+@keyframes pai-pulse {
+  0%,
+  70%,
+  100% {
+    opacity: 0.25;
+  }
+  35% {
+    opacity: 1;
+  }
+}
+
+/* --- the passports an answer opened --------------------------------- */
+.pai-evid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 2px;
+}
+.pai-eviden {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-size: 11px;
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: 0.14s;
+}
+.pai-eviden:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+}
+.pai-eviden svg {
+  width: 13px;
+  height: 13px;
+  color: var(--cool);
+}
+.pai-eviden .mono {
+  font-size: 10.5px;
+}
+
+/* A lookup in flight. Present tense: it is what the panel is doing at
+   that second, and it goes when the answer lands. */
+.pai-act {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.pai-act svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  animation: pai-scan 1.4s ease-in-out infinite;
+}
+.pai-act .mono {
+  color: var(--ink-2);
+}
+@keyframes pai-scan {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* --- not connected --------------------------------------------------- */
+.pai-off {
+  margin: auto 0;
+  text-align: center;
+  color: var(--ink-3);
+}
+.pai-off svg {
+  width: 20px;
+  height: 20px;
+}
+.pai-off p {
+  margin: 7px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* --- the composer ---------------------------------------------------- */
+.pai-ask {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  padding: 9px 13px 0;
+}
+.pai-field {
+  flex: 1;
+  min-width: 0;
+  /* Two lines before it scrolls. A text box that grows to fill the panel
+     takes the answer off the screen. */
+  max-height: 84px;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: none;
+}
+.pai-go {
+  flex: none;
+  height: 34px;
+  min-width: 34px;
+  padding: 0 11px;
+  display: grid;
+  place-items: center;
+}
+.pai-go svg {
+  width: 15px;
+  height: 15px;
+}
+.pai-note {
+  margin: 8px 13px 11px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+/* The sidebar drawer and the panel would sit on top of each other on a
+   phone, and the drawer is how you leave the screen. */
+@media (max-width: 640px) {
+  .pai-dock {
+    right: 12px;
+    left: 12px;
+    bottom: 12px;
+    align-items: stretch;
+  }
+  .pai-panel {
+    width: auto;
+    max-width: none;
+    height: min(74vh, calc(100vh - 120px));
+  }
+  .pai-launch {
+    align-self: flex-end;
+  }
+}
+.appwrap.drawer-open .pai-dock {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pai-wait i,
+  .pai-act svg {
+    animation: none;
+  }
+  .pai-launch:hover {
+    transform: none;
+  }
+}

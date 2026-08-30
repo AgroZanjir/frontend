@@ -241,15 +241,15 @@ const Home = () => {
         </div>
       </Band>
 
-      <Band soft>
+      {/* <Band soft>
         <div className="sechead">
           <Eyebrow>{t("w_how_e")}</Eyebrow>
           <h2 className="d2">{t("w_how_t")}</h2>
         </div>
         <Steps />
-      </Band>
+      </Band> */}
 
-      <Band>
+      {/* <Band>
         <div
           className="between"
           style={{
@@ -274,7 +274,7 @@ const Home = () => {
             <ProduceCard key={p.id} p={p} />
           ))}
         </div>
-      </Band>
+      </Band> */}
 
       <section className="band deep">
         <div className="band-in" style={{ textAlign: "center" }}>

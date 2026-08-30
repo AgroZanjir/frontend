@@ -20,22 +20,36 @@ import {
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 
 import PanelIcon from "@/components/panel/icons";
+import Assistant from "@/components/site/Assistant";
 import { LangSeg, ThemeSeg } from "@/components/layout/PanelShell";
 import { usePanelT } from "@/lib/panel-format";
 import { cn } from "@/lib/utils";
 
 /**
- * Seven primary items. Home is the logo and Careers lives in the footer -
- * nine would wrap to a second row in Uzbek, which is the longest language.
+ * Six primary items. Home is the logo and Careers lives in the footer - nine
+ * would wrap to a second row in Uzbek, which is the longest language.
+ *
+ * Technology and Partners sit together under Ecosystem. They are the two pages
+ * about the things around the platform rather than the platform itself - the
+ * ZEROCO layer and the bodies the programme runs with - and pulling them into
+ * one item buys back the width Uzbek needs.
  */
-const NAV: [string, string][] = [
-  ["/about", "w_about"],
-  ["/services", "w_services"],
-  ["/showroom", "w_showroom"],
-  ["/technology", "w_tech"],
-  ["/partners", "w_partners"],
-  ["/news", "w_news"],
-  ["/contact", "w_contact"],
+type NavItem =
+  { to: string; k: string } | { k: string; items: [string, string][] };
+
+export const NAV: NavItem[] = [
+  { to: "/about", k: "w_about" },
+  { to: "/services", k: "w_services" },
+  { to: "/showroom", k: "w_showroom" },
+  {
+    k: "w_nav_eco",
+    items: [
+      ["/technology", "w_tech"],
+      ["/partners", "w_partners"],
+    ],
+  },
+  { to: "/news", k: "w_news" },
+  { to: "/contact", k: "w_contact" },
 ];
 
 const Mark = ({ stroke = "2" }: { stroke?: string }) => (
@@ -113,6 +127,83 @@ const useNavMenu = (barRef: RefObject<HTMLElement | null>) => {
   return [open, setOpen] as const;
 };
 
+/**
+ * One nav item that opens onto two.
+ *
+ * A disclosure rather than a menu: the things inside are links to pages, not
+ * commands, so `aria-expanded` on the trigger and ordinary anchors underneath
+ * is the honest markup - and it is what lets a reader open one in a new tab.
+ *
+ * It closes on the same four things the phone menu does, for the same reason:
+ * a dropdown left open over the page is how somebody loses the page. The one
+ * addition is that opening a link inside it closes it, which the route change
+ * takes care of.
+ *
+ * On a phone it is an accordion inside the sheet instead of a layer over it.
+ * Same markup either way - the sheet is already a layer, and a second one on
+ * top of it would be a dropdown hanging off the bottom of the screen.
+ */
+export const NavGroup = ({
+  k,
+  items,
+}: {
+  k: string;
+  items: [string, string][];
+}) => {
+  const { t } = usePanelT();
+  const { pathname } = useLocation();
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  const id = `nav-${k}`;
+
+  useEffect(() => setOpen(false), [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const onPointer = (e: PointerEvent) => {
+      if (!box.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointer);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointer);
+    };
+  }, [open]);
+
+  // The parent reads as active while either of its pages is open, so the bar
+  // still says where you are once you are inside one of them.
+  const inside = items.some(([to]) => pathname.startsWith(to));
+
+  return (
+    <div className={cn("nav-group", open && "open")} ref={box}>
+      <button
+        type="button"
+        className={cn("nav-group-t", inside && "on")}
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen((was) => !was)}
+      >
+        {t(k)}
+        <PanelIcon name="dn" className="nav-caret" />
+      </button>
+
+      <div className="nav-sub" id={id}>
+        {items.map(([to, key]) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) => (isActive ? "on" : "")}
+          >
+            {t(key)}
+          </NavLink>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const SiteHeader = () => {
   const { t } = usePanelT();
   const scrolled = useScrolled();
@@ -136,15 +227,19 @@ const SiteHeader = () => {
             step. */}
         <div className="nav-drop" id="site-menu">
           <nav className="site-nav">
-            {NAV.map(([to, k]) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) => (isActive ? "on" : "")}
-              >
-                {t(k)}
-              </NavLink>
-            ))}
+            {NAV.map((item) =>
+              "items" in item ? (
+                <NavGroup key={item.k} k={item.k} items={item.items} />
+              ) : (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) => (isActive ? "on" : "")}
+                >
+                  {t(item.k)}
+                </NavLink>
+              ),
+            )}
           </nav>
 
           <div className="site-actions">
@@ -324,6 +419,10 @@ const SiteShell = () => {
         <Outlet />
       </main>
       <SiteFooter />
+      {/* Outside `main`, so the entry animation keyed on the route does not
+          replay it - and so a conversation is not interrupted by the reader
+          following a link the assistant just gave them. */}
+      <Assistant />
     </>
   );
 };

@@ -1405,6 +1405,22 @@
     "ai_user_hint": "for the password door, until OneID",
     "au_restore": "Restore",
     "ba_nocoll": "No collateral pledged yet",
-    "act_no_cap": "Your role does not allow this"
+    "act_no_cap": "Your role does not allow this",
+    "w_ai_e_out": "Your session has ended. Sign in again.",
+    "w_ai_p_title": "Ask the platform",
+    "w_ai_p_sub": "Reads your records. Changes nothing.",
+    "w_ai_p_lede": "Ask across your lots, storage and liens in one question — the things that take three screens to answer. It reads only what your own screens show you.",
+    "w_ai_p_q1": "Which of my lots are pledged?",
+    "w_ai_p_q2": "What goes off in the next 14 days?",
+    "w_ai_p_q3": "How much room is left in the ZEROCO zones?",
+    "w_ai_p_ph": "Ask about your lots, zones or liens…",
+    "w_ai_p_off": "The assistant is not connected in this deployment. Every screen works as it always did.",
+    "w_ai_p_note": "Answers can be wrong — check anything you act on. It reads only; it cannot change a record. Opening a lot passport is written to the audit log under your name.",
+    "w_ai_p_open": "Passport",
+    "w_ai_t_lots": "Reading your lots",
+    "w_ai_t_pass": "Reading the passport for lot",
+    "w_ai_t_zones": "Reading storage zones",
+    "w_ai_t_liens": "Reading the lien register",
+    "w_nav_eco": "Ecosystem"
   }
 }

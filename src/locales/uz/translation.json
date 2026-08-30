@@ -1383,6 +1383,22 @@
     "ai_user_hint": "OneID ulanmaguncha parol bilan kirish uchun",
     "au_restore": "Tiklash",
     "ba_nocoll": "Hozircha garov yo‘q",
-    "act_no_cap": "Rolingiz bunga ruxsat bermaydi"
+    "act_no_cap": "Rolingiz bunga ruxsat bermaydi",
+    "w_ai_e_out": "Seans tugadi. Qaytadan kiring.",
+    "w_ai_p_title": "Platformadan so‘rang",
+    "w_ai_p_sub": "Yozuvlaringizni o‘qiydi. Hech narsani o‘zgartirmaydi.",
+    "w_ai_p_lede": "Lotlar, saqlash va garovlar bo‘yicha bitta savolda so‘rang — uchta ekran talab qiladigan narsalarni. Faqat o‘z ekranlaringiz ko‘rsatadigan ma’lumotni o‘qiydi.",
+    "w_ai_p_q1": "Qaysi lotlarim garovda?",
+    "w_ai_p_q2": "Yaqin 14 kunda nima muddati tugaydi?",
+    "w_ai_p_q3": "ZEROCO zonalarida qancha joy qoldi?",
+    "w_ai_p_ph": "Lot, zona yoki garov haqida so‘rang…",
+    "w_ai_p_off": "Bu o‘rnatmada yordamchi ulanmagan. Barcha ekranlar avvalgidek ishlaydi.",
+    "w_ai_p_note": "Javoblar xato bo‘lishi mumkin — qaror qabul qilishdan oldin tekshiring. U faqat o‘qiydi, yozuvni o‘zgartira olmaydi. Lot pasportini ochish audit jurnaliga sizning nomingiz bilan yoziladi.",
+    "w_ai_p_open": "Pasport",
+    "w_ai_t_lots": "Lotlaringiz o‘qilmoqda",
+    "w_ai_t_pass": "Lot pasporti o‘qilmoqda:",
+    "w_ai_t_zones": "Saqlash zonalari o‘qilmoqda",
+    "w_ai_t_liens": "Garov reestri o‘qilmoqda",
+    "w_nav_eco": "Ekotizim"
   }
 }

@@ -26,6 +26,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import api from "@/lib/api";
 import PanelToasts from "@/components/panel/toast";
+import PanelAssistant from "@/components/panel/Assistant";
 import { PanelToastProvider, useAction } from "@/lib/panel-actions";
 import { usePanelData } from "@/lib/panel-data";
 import { useOptionalPanelData } from "@/lib/panel-context";
@@ -508,6 +509,9 @@ const PanelShell = () => {
             </div>
           </div>
         </div>
+        {/* Outside the scrolling body, so a conversation survives moving
+            between screens - which is most of what it is for. */}
+        <PanelAssistant />
       </div>
     </PanelToastProvider>
   );

@@ -28,6 +28,7 @@ import { PanelToastProvider } from "@/lib/panel-actions";
 import { FIXTURES } from "@/lib/panel-fixtures";
 import { PANELS, panelScreens } from "@/lib/panels";
 import { SCREENS } from "@/pages/panels/registry";
+import PanelAssistant from "@/components/panel/Assistant";
 import "@/i18n";
 
 const cases = PANELS.flatMap((panel) =>
@@ -60,5 +61,40 @@ describe("panel screens", () => {
       </QueryClientProvider>,
     );
     expect(html.length).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * The assistant sits in the corner of all forty-four of them, so it is
+ * rendered here rather than beside each. What matters on the server pass is
+ * that it renders *closed*: it asks the backend whether there is a model
+ * behind it, and a widget that opened a text box before hearing back would be
+ * offering a conversation it may not be able to have.
+ */
+describe("the panel assistant", () => {
+  const html = renderToString(
+    <QueryClientProvider client={new QueryClient()}>
+      <StaticRouter location="/farmer/lots">
+        <PanelAssistant />
+      </StaticRouter>
+    </QueryClientProvider>,
+  );
+
+  it("puts a launcher on every panel screen", () => {
+    expect(html).toContain("pai-launch");
+    expect(html).toContain('aria-expanded="false"');
+  });
+
+  it("does not render the panel until it is opened", () => {
+    expect(html).not.toContain("pai-panel");
+    expect(html).not.toContain("textarea");
+  });
+
+  it("uses the operator design system, not the website's", () => {
+    // Both sheets are global and the panels must not pick up the site's
+    // serif-and-navy widget. Different prefixes are what keeps them apart -
+    // matched on a word boundary, since `pai-launch` contains `ai-launch`.
+    expect(html).not.toMatch(/class="[^"]*\bai-/);
+    expect(html).toMatch(/class="[^"]*\bpai-/);
   });
 });

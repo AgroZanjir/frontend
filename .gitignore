@@ -11,3 +11,8 @@ dist/
 *.swp
 .env
 *.log
+
+# TypeScript's incremental build cache. Machine-specific, rewritten by every
+# `tsc -b`, and tracked here since the original import - which meant every
+# build produced a diff.
+*.tsbuildinfo
