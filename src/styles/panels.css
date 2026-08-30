@@ -1,106 +1,109 @@
 /* ===================================================================
    Agro Zanjir panel design system.
 
-   Ported verbatim from the HTML prototype (`00-Panellar.html` and the
-   eight panel files) so the built product and the approved design stay
-   the same thing. Two adaptations, and only two:
+   Ported from the HTML prototype (`00-Panellar.html` and the eight panel
+   files) so the built product and the approved design stay the same
+   thing. Three adaptations:
 
      1. Dark mode is keyed on `:root.dark`, the class `ThemeProvider`
         already sets, instead of the prototype's `prefers-color-scheme`
         plus `[data-theme]` pair. The app owns the theme choice.
      2. `body` keeps its Tailwind base layer; the tokens below feed both
         this sheet and the shadcn variables in `index.css`.
+     3. The token block is a mapping onto `styles/brand.css` - the
+        institutional navy and gold the website wears. The prototype's
+        pine green is gone from the palette and kept where it means
+        something: `--good` is *in regime*, and that is a different
+        statement from *this is the brand*.
 
    The palette, the type scale and the chart series are the design's,
    not ours - do not tune them here without the design changing first.
    =================================================================== */
 /* ===================================================================
    AGRO ZANJIR — DESIGN SYSTEM
-   Identity: pine green (agriculture) + cold-chain teal, on neutrals
-   biased slightly green so nothing reads as default grey.
-   Typeface: IBM Plex Sans — chosen for genuine Cyrillic coverage,
-   since this product must hold uz / ru / en equally well.
+   Identity: institutional navy + gold, on neutrals biased slightly blue
+   so nothing reads as default grey. Typeface: Inter, with Source Serif 4
+   on the one heading at the top of a screen - both chosen for genuine
+   Cyrillic coverage, since this product must hold uz / ru / en equally
+   well.
    Chart series validated against the six-check colour method.
    =================================================================== */
 
 :root {
+  /* Every value here is a mapping onto `styles/brand.css`. The product's
+     colour and its typefaces are that file's; this block says which brand
+     token plays which part in an operator's tool, and the names on the left
+     are the ones two thousand lines below and forty-four screens use.
+
+     Three things stay the panels' own, and none of them is decoration:
+
+       the semantic colours   `--good` means *in regime* and `--crit` means
+                              *excursion*. Navy and gold cannot say that, and
+                              a hub manager reads those two across a room.
+       the chart series       ZEROCO blue against control orange. A data
+                              colour that moves with a rebrand is a chart
+                              that lies about last month.
+       the radii              4-13px, not the website's 10-22. A table of
+                              forty rows is not a marketing card. */
+
   /* --- surfaces & ink --- */
-  --ground: #f3f6f4;
-  --surface: #ffffff;
-  --surface-2: #edf2ef;
-  --surface-3: #e2eae6;
-  --ink: #111d19;
-  --ink-2: #4a5c55;
-  --ink-3: #78887f;
-  --line: #dce4df;
-  --line-2: #c4d0ca;
-  --line-3: #aebdb5;
+  --ground: var(--b-bg-2);
+  --surface: var(--b-surface);
+  --surface-2: var(--b-surface-2);
+  --surface-3: var(--b-surface-3);
+  --ink: var(--b-ink);
+  --ink-2: var(--b-text);
+  --ink-3: var(--b-dim);
+  --line: var(--b-border);
+  --line-2: var(--b-border-strong);
+  --line-3: var(--b-border-3);
 
   /* --- brand --- */
-  --primary: #1d6b4e;
-  --primary-2: #175840;
-  --primary-ink: #155a40;
-  --primary-soft: #e2efe8;
-  --cool: #276a7c;
-  --cool-soft: #e0edf1;
+  --primary: var(--b-navy);
+  --primary-2: var(--b-navy-2);
+  --primary-ink: var(--b-navy-2);
+  --primary-soft: var(--b-navy-soft);
+  --cool: var(--b-cold);
+  --cool-soft: var(--b-cold-soft);
 
   /* --- semantic status (never reused as a chart series) --- */
-  --good: #1b7f4f;
-  --good-soft: #e1f0e7;
-  --warn: #96590f;
-  --warn-soft: #f7edde;
-  --crit: #a0322a;
-  --crit-soft: #f8e7e4;
-  --info: #2a5f8f;
-  --info-soft: #e5eef7;
+  --good: var(--b-success);
+  --good-soft: var(--b-success-soft);
+  --warn: var(--b-warning);
+  --warn-soft: var(--b-warning-soft);
+  --crit: var(--b-danger);
+  --crit-soft: var(--b-danger-soft);
+  --info: var(--b-cold);
+  --info-soft: var(--b-cold-soft);
 
-  /* --- chart series --- */
+  /* --- chart series: the design's, and not the palette's --- */
   --s-zeroco: #2a78d6;
   --s-zeroco-soft: #e4eefa;
   --s-control: #eb6834;
   --s-control-soft: #fceae2;
 
-  --shadow-1: 0 1px 2px rgba(17, 29, 25, 0.05);
-  --shadow-2:
-    0 1px 2px rgba(17, 29, 25, 0.05), 0 6px 16px rgba(17, 29, 25, 0.05);
-  --shadow-3: 0 8px 30px rgba(17, 29, 25, 0.1);
+  --shadow-1: var(--b-shadow-sm);
+  --shadow-2: var(--b-shadow-sm), 0 6px 16px rgba(var(--b-shade), 0.06);
+  --shadow-3: 0 8px 30px rgba(var(--b-shade), 0.12);
 
   --r-xs: 4px;
   --r-sm: 6px;
   --r: 9px;
   --r-lg: 13px;
-  --f: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --fm: "IBM Plex Mono", "SF Mono", Consolas, monospace;
+  --f: var(--b-sans);
+  /* Source Serif 4, for the one heading at the top of a screen. Everything
+     else on a panel is a label or a number and stays in the sans. */
+  --fd: var(--b-serif);
+  --fm: var(--b-mono);
 
   --nav-w: 224px;
   --top-h: 52px;
 }
 
 :root.dark {
-  --ground: #0a100e;
-  --surface: #121a17;
-  --surface-2: #17211d;
-  --surface-3: #1e2a25;
-  --ink: #e9f0ec;
-  --ink-2: #9baba4;
-  --ink-3: #75857d;
-  --line: #222e29;
-  --line-2: #31413a;
-  --line-3: #425349;
-  --primary: #54bc8b;
-  --primary-2: #6bcb9e;
-  --primary-ink: #6bcb9e;
-  --primary-soft: #132a20;
-  --cool: #66b3c5;
-  --cool-soft: #102429;
-  --good: #4fb985;
-  --good-soft: #12271d;
-  --warn: #d2984f;
-  --warn-soft: #281f14;
-  --crit: #de7b6c;
-  --crit-soft: #2c1916;
-  --info: #6ba3da;
-  --info-soft: #131f2c;
+  /* The brand layer's dark values carry all of it; only the two chart series
+     and the softs that go with them are restated, because a series has to be
+     legible on a dark ground without becoming a different colour. */
   --s-zeroco: #3987e5;
   --s-zeroco-soft: #142236;
   --s-control: #d95926;
@@ -152,17 +155,30 @@ button {
 }
 
 /* ===== type scale ===== */
+/* The one serif on a panel: the heading at the top of a screen, and the
+   figure a stat tile exists to show. Everything else is a label, a number in
+   a column or a control - a serif there would cost density and buy nothing.
+   It is enough to tie the tool to the website it sits behind. */
 .t-display {
-  font-size: 24px;
+  font-family: var(--fd);
+  font-size: 25px;
   font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
+  letter-spacing: -0.01em;
+  line-height: 1.18;
 }
 .t-h1 {
   font-size: 19px;
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.2;
+}
+/* Only the screen's own title, not every `.t-h1` - the class also heads cards
+   and stat blocks, and a serif on all of them would turn a dense tool into a
+   brochure. */
+.phead .t-h1 {
+  font-family: var(--fd);
+  font-size: 21px;
+  letter-spacing: -0.008em;
 }
 .t-h2 {
   font-size: 15px;
@@ -365,7 +381,9 @@ button {
   text-align: center;
 }
 :root.dark .nav .badge {
-  color: #0a100e;
+  /* On the bright coral `--crit` fill, near-black is the legible half of the
+     pair; white on it is about 2.6:1. */
+  color: var(--b-bg);
 }
 
 .side-foot {
@@ -611,7 +629,9 @@ button {
   background: var(--primary-2);
 }
 :root.dark .btn-p {
-  color: #0a100e;
+  /* The dark primary is a mid blue, not a bright mint: white reads on it and
+     near-black no longer does. */
+  color: #fff;
 }
 .btn-d {
   background: var(--crit);
@@ -619,7 +639,7 @@ button {
   color: #fff;
 }
 :root.dark .btn-d {
-  color: #0a100e;
+  color: var(--b-bg);
 }
 .btn-q {
   border-color: transparent;

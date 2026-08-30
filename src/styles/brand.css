@@ -9,12 +9,16 @@
    design systems map their own names onto them:
 
      styles/site.css    the public website  - mapped
-     styles/panels.css  the operator panels - not yet
+     styles/panels.css  the operator panels - mapped
 
-   That indirection is the point. The panels carry the approved
-   prototype's own palette today; switching them over is remapping their
-   token block against these names, not editing forty-four screens. The
-   website was remapped exactly that way, in about twenty lines.
+   That indirection is the point, and it paid: both sheets were switched
+   to this palette by rewriting their token blocks, not by editing
+   fifty-five screens.
+
+   The panels keep three things of their own, and they are not
+   decoration: the semantic colours (`--good` is *in regime*, `--crit` is
+   *excursion* - navy and gold cannot say that), the two chart series,
+   and the tighter radii a dense table needs.
 
    Two conventions:
 
@@ -47,8 +51,14 @@
   --b-bg-2: #f5f7fb;
   --b-surface: #ffffff;
   --b-surface-2: #eef2f8;
+  --b-surface-3: #e4e9f2;
   --b-border: #e3e8ef;
   --b-border-strong: #d2dae5;
+  --b-border-3: #bcc7d6;
+  /* A navy fill light enough to sit under text: the active row in a sidebar,
+     a selected chip, the soft half of a primary pill. */
+  --b-navy-soft: #e8edf5;
+  --b-cold-soft: #e4eefa;
 
   /* --- ink ----------------------------------------------------------- */
   --b-ink: #16202b;
@@ -61,8 +71,11 @@
 
   /* --- state --------------------------------------------------------- */
   --b-danger: #e25a4a;
+  --b-danger-soft: #fbeae7;
   --b-warning: #c79a3a;
+  --b-warning-soft: #f9f0dd;
   --b-success: #127a4a;
+  --b-success-soft: #e2f1ea;
   /* The cold chain's own blue. A data colour, not a brand colour: the
      ZEROCO series is this blue on every chart in the product and must
      not drift with the palette. */
@@ -104,8 +117,12 @@
   --b-bg-2: #0e1828;
   --b-surface: #101b2e;
   --b-surface-2: #16243c;
+  --b-surface-3: #1c2c46;
   --b-border: #263348;
   --b-border-strong: #33445f;
+  --b-border-3: #415574;
+  --b-navy-soft: #13233c;
+  --b-cold-soft: #142236;
 
   --b-ink: #eef3fa;
   --b-text: #c4cfdd;
@@ -115,8 +132,11 @@
   --b-on-navy-2: #9aa9c0;
 
   --b-danger: #ff6b5a;
+  --b-danger-soft: #2c1916;
   --b-warning: #e7c578;
+  --b-warning-soft: #281f14;
   --b-success: #3fd693;
+  --b-success-soft: #12271d;
   --b-cold: #4f96e8;
   --b-cold-lift: #7db4f2;
 

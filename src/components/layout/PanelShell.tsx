@@ -28,6 +28,7 @@ import api from "@/lib/api";
 import PanelToasts from "@/components/panel/toast";
 import { PanelToastProvider, useAction } from "@/lib/panel-actions";
 import { usePanelData } from "@/lib/panel-data";
+import { useOptionalPanelData } from "@/lib/panel-context";
 import { signOut, usePanelPersona } from "@/lib/panel-session";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
@@ -215,6 +216,7 @@ const PanelSidebar = ({ panel }: { panel: PanelDef }) => {
  */
 const PanelSearch = ({ panel }: { panel: PanelDef }) => {
   const { t } = usePanelT();
+  const signedIn = userStore((state) => state.isAuthenticated);
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -250,6 +252,10 @@ const PanelSearch = ({ panel }: { panel: PanelDef }) => {
     // somewhere their role may not go.
     navigate(hit.path === "/lot" ? `${panel.path}/lot` : hit.path);
   };
+
+  // The endpoint is scoped to the caller, so there is nothing to search
+  // without one - and the public panel is reachable with no session at all.
+  if (!signedIn) return null;
 
   return (
     <div className="topsearch-wrap" ref={box}>
@@ -324,10 +330,14 @@ const useDebounced = (value: string, ms: number) => {
  */
 const PanelBell = () => {
   const { t } = usePanelT();
-  const { NOTIFS } = usePanelData();
+  // Optional, because this bar is also the public panel's, and that panel has
+  // no session and therefore no dataset. Reading it unconditionally took the
+  // whole screen down for an anonymous visitor.
+  const data = useOptionalPanelData();
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
-  const unread = NOTIFS.filter((n) => !n.read);
+  const notifications = data?.NOTIFS ?? [];
+  const unread = notifications.filter((n) => !n.read);
 
   const read = useAction(
     (id: string) => api.post(`/panels/notifications/${id}/read/`),
@@ -355,10 +365,10 @@ const PanelBell = () => {
       </button>
       {open && (
         <div className="bell-drop">
-          {NOTIFS.length === 0 ? (
+          {notifications.length === 0 ? (
             <div className="srch-empty">{t("nt_empty")}</div>
           ) : (
-            NOTIFS.map((n) => (
+            notifications.map((n) => (
               <button
                 type="button"
                 key={n.id}

@@ -57,7 +57,7 @@ Where the pieces live:
 | `src/lib/public-api.ts` | the public panel's own data: no session, one open endpoint |
 | `src/lib/panel-actions.tsx` | `useAction` and the toast stack: every write on the panels |
 | `src/styles/brand.css` | the brand layer: one palette and one pair of typefaces, which both design systems map onto |
-| `src/styles/panels.css` | the operator design system, ported from the prototype |
+| `src/styles/panels.css` | the operator design system, mapped onto the brand layer |
 | `src/components/panel/*` | the shared components: stats, pills, tables, charts |
 | `src/components/layout/PanelShell.tsx` | sidebar, breadcrumb, demo bar |
 | `src/pages/panels/auth/PanelAuth.tsx` | the OneID gate and the waiting screen |
@@ -111,17 +111,23 @@ Eight things worth knowing before changing them:
 
 6. **There are two design systems and one brand layer.** `brand.css` declares
    the identity - institutional navy `#0a2540` with gold `#a8801f`, Source
-   Serif 4 for headings over Inter for reading text, 14px radii, navy-tinted
-   shadows - as `--b-*` tokens and styles nothing. The website's token block
-   maps onto it in about twenty lines, which is the whole of what changed when
-   it took the Konglomerat look: no page, no component and no class name moved.
+   Serif 4 for headings over Inter for reading text, navy-tinted shadows - as
+   `--b-*` tokens and styles nothing. Both sheets map onto it: `site.css` and
+   `panels.css` each open with a token block that says which brand token plays
+   which part. That is the whole of what either restyle changed; no page, no
+   component and no class name moved.
 
-   **The panels have not been mapped yet.** They still carry the approved
-   prototype's pine green, deliberately, and switching them over is remapping
-   the token block at the top of `panels.css` against the same `--b-*` names -
-   not editing forty-four screens. The one thing to check when that happens is
-   the semantic colours: a panel's green means *in regime* and its red means
-   *excursion*, and those must not become navy and gold.
+   **The panels keep three things of their own, and none is decoration.** The
+   semantic colours: `--good` means *in regime* and `--crit` means
+   *excursion*, and navy and gold cannot say that - a hub manager reads those
+   two across a room. The two chart series: ZEROCO blue against control
+   orange, because a data colour that moves with a rebrand is a chart that
+   lies about last month. And the radii: 4-13px, not the website's 10-22,
+   because a table of forty rows is not a marketing card.
+
+   The serif appears twice on a panel - the screen's own title and the figure
+   on a stat tile - and nowhere else. Everything else is a label, a number in
+   a column or a control.
 
 7. **The design system is not Tailwind.** `panels.css` carries the prototype's
    tokens and classes verbatim; `index.css` points shadcn's variables at the
