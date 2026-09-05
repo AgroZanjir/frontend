@@ -19,6 +19,7 @@
  *    marker pen.
  */
 
+import { useSearchParams } from "react-router-dom";
 import { useState } from "react";
 
 import {
@@ -48,14 +49,26 @@ const grams = (text: string): number => Math.round(kg(text) * 1000);
 const newKey = () => Math.random().toString(36).slice(2, 10);
 
 const HubWeigh = () => {
-  const { FARMS, PRODUCTS, ZONES } = usePanelData();
+  const [params] = useSearchParams();
+  const { ARRIVALS, FARMS, PRODUCTS, ZONES } = usePanelData();
   const { t, pn, nf } = usePanelT();
 
-  const [gross, setGross] = useState("4 310");
+  // The vehicle the gate sent up. Without this the operator who clicked
+  // "weigh" on the apricot lorry got a form describing a melon on a different
+  // plate, and had to retype what the gate already knew.
+  //
+  // The estimate goes in as the gross reading so the bridge has something to
+  // correct rather than an empty box; it is the declared figure, and the whole
+  // point of the screen is that the weighed one replaces it.
+  const arrival = ARRIVALS.find((a) => a.id === params.get("arr"));
+
+  const [gross, setGross] = useState(arrival ? nf(arrival.est) : "4 310");
   const [tare, setTare] = useState("110");
-  const [farm, setFarm] = useState(FARMS[0]?.c ?? "");
-  const [product, setProduct] = useState("melon");
-  const [vehicle, setVehicle] = useState("01 A 234 BC");
+  const [farm, setFarm] = useState(
+    (arrival ? FARMS[arrival.farm]?.c : FARMS[0]?.c) ?? "",
+  );
+  const [product, setProduct] = useState(arrival?.p ?? "melon");
+  const [vehicle, setVehicle] = useState(arrival?.v ?? "01 A 234 BC");
   const [key, setKey] = useState(newKey);
   const [created, setCreated] = useState<string>("");
 
@@ -162,7 +175,7 @@ const HubWeigh = () => {
               <select
                 className="inp"
                 value={product}
-                onChange={(e) => setProduct(e.target.value)}
+                onChange={(e) => setProduct(e.target.value as ProductCode)}
               >
                 {Object.entries(PRODUCTS).map(([code, item]) => (
                   <option key={code} value={code}>

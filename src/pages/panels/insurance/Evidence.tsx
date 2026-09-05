@@ -16,6 +16,7 @@ import {
   Tbl,
 } from "@/components/panel/primitives";
 import { usePanelT } from "@/lib/panel-format";
+import { downloadJson } from "@/lib/panel-download";
 import { usePanelData } from "@/lib/panel-data";
 
 /** `[i18n key, format, size, selected]`. */
@@ -46,10 +47,28 @@ const InsuranceEvidence = () => {
         sub={t("ic_note")}
         actions={
           <>
-            <Btn cls="btn-p" icon="down">
+            <Btn cls="btn-p" icon="down" onClick={() =>
+                downloadJson(`evidence-${e.c}`, {
+                  excursion: e.c,
+                  zone: e.zone,
+                  sensor: e.sensor,
+                  metric: e.metric,
+                  threshold: e.thr,
+                  peak: e.peak,
+                  from: e.from,
+                  to: e.to,
+                  duration_minutes: e.durMin,
+                  severity: e.sev,
+                  resolved: e.resolved,
+                  lots_affected: e.lots,
+                  readings: e.trace,
+                })
+              }>
               {t("e_bundle")}
             </Btn>
-            <Btn icon="print">{t("print")}</Btn>
+            <Btn icon="print" onClick={() => window.print()}>
+              {t("print")}
+            </Btn>
           </>
         }
       />

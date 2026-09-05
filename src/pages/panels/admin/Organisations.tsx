@@ -12,11 +12,18 @@ import { useNavigate } from "react-router-dom";
 import { Btn, PageHead, Tbl } from "@/components/panel/primitives";
 import { ORG_STATUS_CLASS, useLabels } from "@/pages/panels/admin/helpers";
 import { usePanelT } from "@/lib/panel-format";
+import { useState } from "react";
+
+import { downloadCsv } from "@/lib/panel-download";
 import { usePanelData } from "@/lib/panel-data";
 
 const AdminOrganisations = () => {
   const { orgTypeKey } = useLabels();
   const { ORGS } = usePanelData();
+  // The queue is what this screen is opened for, so it can be narrowed to it.
+  const [st, setSt] = useState("");
+  const states = [...new Set(ORGS.map((o) => o.st))];
+  const rows = st ? ORGS.filter((o) => o.st === st) : ORGS;
   const { t } = usePanelT();
   const navigate = useNavigate();
 
@@ -27,8 +34,41 @@ const AdminOrganisations = () => {
         sub={t("ao_sub")}
         actions={
           <>
-            <Btn icon="chev">{t("filter")}</Btn>
-            <Btn icon="down">{t("export")}</Btn>
+            <select
+              className="inp"
+              style={{ width: 180 }}
+              value={st}
+              onChange={(e) => setSt(e.target.value)}
+            >
+              <option value="">
+                {t("filter")}: {t("all")}
+              </option>
+              {states.map((s) => (
+                <option key={s} value={s}>
+                  {t(`s_${s}`)}
+                </option>
+              ))}
+            </select>
+            <Btn
+              icon="down"
+              onClick={() =>
+                downloadCsv(
+                  "organisations",
+                  [t("ao_title"), t("ao_type"), t("ao_tin"), t("ao_region"), t("ao_users"), t("ao_st"), t("ao_since")],
+                  rows.map((o) => [
+                    o.n,
+                    t(orgTypeKey(o.t)),
+                    o.tin,
+                    o.r,
+                    o.users,
+                    t(`s_${o.st}`),
+                    o.since ?? "",
+                  ]),
+                )
+              }
+            >
+              {t("export")}
+            </Btn>
           </>
         }
       />
@@ -45,11 +85,11 @@ const AdminOrganisations = () => {
           [""],
         ]}
       >
-        {ORGS.map((o) => (
+        {rows.map((o) => (
           <tr
             key={o.c}
             className="click"
-            onClick={() => navigate("/admin/organisation")}
+            onClick={() => navigate(`/admin/organisation?o=${o.c}`)}
           >
             <td>
               <div style={{ fontWeight: 500 }}>{o.n}</div>

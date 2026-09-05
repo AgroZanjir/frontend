@@ -28,6 +28,7 @@ import {
   Tbl,
 } from "@/components/panel/primitives";
 import { usePanelT } from "@/lib/panel-format";
+import { downloadCsv } from "@/lib/panel-download";
 import { usePanelData } from "@/lib/panel-data";
 import { cn } from "@/lib/utils";
 
@@ -80,7 +81,34 @@ const TrialCompare = () => {
                 {t("t_table")}
               </button>
             </div>
-            <Btn icon="down">{t("export")}</Btn>
+            <Btn
+            icon="down"
+            onClick={() =>
+              downloadCsv(
+                `trial-${T.code}`,
+                [
+                  t("t_day"),
+                  `${t("t_loss")} · ${t("t_armz")}`,
+                  `${t("t_loss")} · ${t("t_armc")}`,
+                  `${t("t_waste")} · ${t("t_armz")}`,
+                  `${t("t_waste")} · ${t("t_armc")}`,
+                  `${t("t_firm")} · ${t("t_armz")}`,
+                  `${t("t_firm")} · ${t("t_armc")}`,
+                ],
+                T.days.map((d, i) => [
+                  d,
+                  T.s.loss.z[i],
+                  T.s.loss.c[i],
+                  T.s.waste.z[i],
+                  T.s.waste.c[i],
+                  T.s.firm.z[i],
+                  T.s.firm.c[i],
+                ]),
+              )
+            }
+          >
+            {t("export")}
+          </Btn>
           </>
         }
       />

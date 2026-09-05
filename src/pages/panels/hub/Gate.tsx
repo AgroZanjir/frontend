@@ -45,7 +45,7 @@ const HubGate = () => {
             // morning, and React then treats the second as the first.
             key={a.id}
             className="click"
-            onClick={() => navigate("/hub/weigh")}
+            onClick={() => navigate(`/hub/weigh?arr=${a.id}`)}
           >
             <td className="mono">{a.t}</td>
             <td className="mono">{a.v}</td>
@@ -64,7 +64,10 @@ const HubGate = () => {
               <Btn
                 sm
                 cls={a.st === "weighing" ? "btn-p" : undefined}
-                onClick={() => navigate("/hub/weigh")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/hub/weigh?arr=${a.id}`);
+                }}
               >
                 {t("g_weigh")}
               </Btn>

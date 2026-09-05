@@ -22,6 +22,7 @@ import {
 import api from "@/lib/api";
 import { useAction } from "@/lib/panel-actions";
 import { usePanelT } from "@/lib/panel-format";
+import { downloadJson } from "@/lib/panel-download";
 import { usePanelData } from "@/lib/panel-data";
 
 const HubExcursion = () => {
@@ -55,7 +56,26 @@ const HubExcursion = () => {
         sub={t("e_sub")}
         actions={
           <>
-            <Btn cls="btn-p" icon="down">
+            {/* What an insurer is sent: the breach, its threshold, the trace
+                that crossed it, and which lots were inside. A file, because
+                the point of it is that it leaves the platform. */}
+            <Btn cls="btn-p" icon="down" onClick={() =>
+                downloadJson(`evidence-${e.c}`, {
+                  excursion: e.c,
+                  zone: e.zone,
+                  sensor: e.sensor,
+                  metric: e.metric,
+                  threshold: e.thr,
+                  peak: e.peak,
+                  from: e.from,
+                  to: e.to,
+                  duration_minutes: e.durMin,
+                  severity: e.sev,
+                  resolved: e.resolved,
+                  lots_affected: e.lots,
+                  readings: e.trace,
+                })
+              }>
               {t("e_bundle")}
             </Btn>
             <Btn
@@ -135,7 +155,7 @@ const HubExcursion = () => {
                   <tr
                     key={code}
                     className="click"
-                    onClick={() => navigate("/hub/lot")}
+                    onClick={() => navigate(`/hub/lot?l=${l.c}`)}
                   >
                     <td>
                       <span className="lotid">{l.c}</span>

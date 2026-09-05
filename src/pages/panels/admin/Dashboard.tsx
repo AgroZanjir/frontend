@@ -93,7 +93,7 @@ const AdminDashboard = () => {
               <tr
                 key={o.c}
                 className="click"
-                onClick={() => navigate("/admin/organisation")}
+                onClick={() => navigate(`/admin/organisation?o=${o.c}`)}
               >
                 <td>
                   <div style={{ fontWeight: 500 }}>{o.n}</div>

@@ -20,6 +20,7 @@ import {
   Tbl,
 } from "@/components/panel/primitives";
 import { usePanelT, daysLeft } from "@/lib/panel-format";
+import { downloadCsv } from "@/lib/panel-download";
 import { usePanelData } from "@/lib/panel-data";
 
 const BankPortfolio = () => {
@@ -39,7 +40,28 @@ const BankPortfolio = () => {
       <PageHead
         title={t("b_title")}
         sub={t("b_sub")}
-        actions={<Btn icon="down">{t("export")}</Btn>}
+        actions={
+          <Btn
+            icon="down"
+            onClick={() =>
+              downloadCsv(
+                "portfolio",
+                [t("b_ref"), t("b_appl"), t("b_kind"), t("b_amt"), t("ba_ltv"), t("b_date"), t("b_st")],
+                FINAPPS.map((a) => [
+                  a.c,
+                  a.app,
+                  t(`k_${a.kind}`),
+                  a.amt,
+                  a.ltv || "",
+                  a.date,
+                  t(`s_${a.st}`),
+                ]),
+              )
+            }
+          >
+            {t("export")}
+          </Btn>
+        }
       />
 
       <div className="grid g4">
@@ -63,7 +85,7 @@ const BankPortfolio = () => {
           d={t("b_coll_d")}
         />
         <Stat
-          k={t("b_ltv")}
+          k={t("ba_ltv")}
           v={
             <>
               62<small>%</small>
@@ -103,7 +125,7 @@ const BankPortfolio = () => {
               <tr
                 key={a.c}
                 className="click"
-                onClick={() => navigate("/bank/application")}
+                onClick={() => navigate(`/bank/application?a=${a.c}`)}
               >
                 <td>
                   <span className="lotid">{a.c}</span>

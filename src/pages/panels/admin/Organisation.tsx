@@ -12,6 +12,8 @@
  * for it, and everything else is automated so that person is not the queue.
  */
 
+import { useSearchParams } from "react-router-dom";
+
 import {
   Btn,
   KV,
@@ -41,16 +43,17 @@ const DOCS: [string, string, string][] = [
 ];
 
 const AdminOrganisation = () => {
+  const [params] = useSearchParams();
   const { orgTypeKey } = useLabels();
   const { ORGS, VCHECKS, VLIC, VREQ, VSTATE } = usePanelData();
   const { t } = usePanelT();
-  // The organisation in review, whichever it is. Pinning the code meant the
-  // screen died the moment that organisation was verified - which is the one
-  // thing this screen exists to do to it.
-  // The organisation in review, whichever it is. Pinning the code meant the
-  // screen died the moment that organisation was verified - which is the one
-  // thing this screen exists to do to it.
+  // Whichever organisation was opened. Falling back to one in review is right
+  // for arriving from the sidebar: that is the one with a decision waiting.
+  // Pinning the code meant the screen died the moment that organisation was
+  // verified - which is the one thing this screen exists to do to it.
+  const asked = params.get("o");
   const o =
+    ORGS.find((x) => x.c === asked) ??
     ORGS.find((x) => x.c === UNDER_REVIEW) ??
     ORGS.find((x) => x.st === "review" || x.st === "pending") ??
     ORGS[0];

@@ -15,17 +15,21 @@ import { usePanelData } from "@/lib/panel-data";
 import { panelByPath } from "@/lib/panels";
 
 /** The lot passport, in the panel the reader is currently working in. */
+/** The passport link for one lot, in whichever panel is asking. */
 export const useLotLink = () => {
   const { pathname } = useLocation();
   const panel = panelByPath(pathname);
-  return `${panel?.path ?? "/farmer"}/lot`;
+  const base = `${panel?.path ?? "/farmer"}/lot`;
+  // The code travels: without it every row opened the one lot the dataset
+  // bundles, whatever row was clicked.
+  return (code: string) => `${base}?l=${encodeURIComponent(code)}`;
 };
 
 const LotRow = ({ l, farm }: { l: Lot; farm?: boolean }) => {
   const { FARMS, PRODUCTS } = usePanelData();
   const { t, nf, pn } = usePanelT();
   const navigate = useNavigate();
-  const to = useLotLink();
+  const lotLink = useLotLink();
 
   const dl = daysLeft(l);
   // A lot that has left the hub has no sales window left to count down.
@@ -33,7 +37,7 @@ const LotRow = ({ l, farm }: { l: Lot; farm?: boolean }) => {
   const closing = !gone && dl != null && dl < 14;
 
   return (
-    <tr className="click" onClick={() => navigate(to)}>
+    <tr className="click" onClick={() => navigate(lotLink(l.c))}>
       <td>
         <span className="lotid">{l.c}</span>
         {l.pledge && (

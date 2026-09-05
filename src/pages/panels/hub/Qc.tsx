@@ -60,6 +60,18 @@ const HubQc = () => {
     { success: "act_qc", capability: "capture" },
   );
 
+  // Cancel is the inspector putting the fruit down and starting again: the
+  // measurements go, the lot stays selected, because the next reading is
+  // usually of the same consignment.
+  const clear = () => {
+    setBrix("");
+    setCalibre("");
+    setFirmness("");
+    setDefects("");
+    setPassed(true);
+    setGrade("A");
+  };
+
   return (
     <>
       <PageHead
@@ -215,7 +227,9 @@ const HubQc = () => {
             >
               {t("qc_save")}
             </Btn>
-            <Btn cls="btn-q">{t("cancel")}</Btn>
+            <Btn cls="btn-q" onClick={clear}>
+              {t("cancel")}
+            </Btn>
           </div>
         </PanelCard>
 

@@ -15,6 +15,7 @@ import {
   Stat,
 } from "@/components/panel/primitives";
 import { usePanelT } from "@/lib/panel-format";
+import { downloadCsv } from "@/lib/panel-download";
 import { usePanelData } from "@/lib/panel-data";
 
 /** Route progress, as a percentage of the total distance. */
@@ -30,7 +31,22 @@ const ExportTransit = () => {
       <PageHead
         title={t("tr_title")}
         sub={t("tr_sub")}
-        actions={<Btn icon="down">{t("export")}</Btn>}
+        actions={
+          /* The reason anyone exports this screen is a dispute about the cold
+             chain, so the file is the readings themselves, in order. */
+          <Btn
+            icon="down"
+            onClick={() =>
+              downloadCsv(
+                `transit-${s.c}`,
+                [t("c_sensor"), t("tr_now")],
+                s.temps.map((temp, i) => [`${i + 1}`, temp]),
+              )
+            }
+          >
+            {t("export")}
+          </Btn>
+        }
       />
 
       <div className="grid g3" style={{ marginBottom: 14 }}>

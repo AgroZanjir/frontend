@@ -113,7 +113,7 @@ const HubOps = () => {
                   <tr
                     key={l.c}
                     className="click"
-                    onClick={() => navigate("/hub/lot")}
+                    onClick={() => navigate(`/hub/lot?l=${l.c}`)}
                   >
                     <td>
                       <span className="lotid">{l.c}</span>

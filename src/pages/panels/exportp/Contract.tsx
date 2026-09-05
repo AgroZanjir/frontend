@@ -42,7 +42,9 @@ const ExportContract = () => {
         }
         actions={
           <>
-            <Btn icon="print">{t("print")}</Btn>
+            <Btn icon="print" onClick={() => window.print()}>
+              {t("print")}
+            </Btn>
             <Btn
               cls="btn-p"
               icon="ship"

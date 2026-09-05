@@ -272,6 +272,35 @@ const toEvent = (e: ApiEvent): LotEvent => ({
   ...(e.severity === "warn" ? { warn: true } : {}),
 });
 
+/**
+ * The history and inspections of one lot.
+ *
+ * Split out of the loader because the passport screen is reachable from a lot
+ * row in four panels, and every one of those rows used to open the same lot -
+ * the one the bundle happens to carry. Reading somebody else's chain of custody
+ * under this lot's code is worse than a thin page.
+ */
+export const toPassport = (
+  passport: any,
+): { EVENTS: LotEvent[]; QC: QcRecord[] } => ({
+  EVENTS: (passport?.events ?? []).map(toEvent),
+  QC: (passport?.qc ?? []).map(
+    (q: any): QcRecord => ({
+      s: q.stage,
+      d: q.inspected_on,
+      by: q.inspector,
+      brix: num(q.measurements?.brix),
+      firm: num(q.measurements?.firmness_n),
+      def: num(q.defect_pct),
+      g: q.grade_assigned,
+    }),
+  ),
+});
+
+/** One lot's passport, for a screen that was opened on a named lot. */
+export const loadLotPassport = async (code: string) =>
+  toPassport(await api.get<any>(`/panels/lots/${encodeURIComponent(code)}/`));
+
 /** The lot the passport screens open. See `loadPanelData`. */
 export const PASSPORT_LOT = "AZ-2026-SMQ-0412";
 
@@ -384,16 +413,7 @@ export const loadPanelData = async (): Promise<PanelData> => {
       est: kg(a.estimated_weight_g),
       st: a.status === "weighing" ? "weighing" : "queued",
     })),
-    EVENTS: (passport?.events ?? []).map(toEvent),
-    QC: (passport?.qc ?? []).map((q: any): QcRecord => ({
-      s: q.stage,
-      d: q.inspected_on,
-      by: q.inspector,
-      brix: num(q.measurements?.brix),
-      firm: num(q.measurements?.firmness_n),
-      def: num(q.defect_pct),
-      g: q.grade_assigned,
-    })),
+    ...toPassport(passport),
     TRIAL: toTrial(trial),
     TRIALS: trials.results.map((t: any): TrialSummary => ({
       c: t.code,

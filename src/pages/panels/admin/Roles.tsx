@@ -17,6 +17,7 @@ import PanelIcon from "@/components/panel/icons";
 import { Btn, Note, PageHead, Stat, Tag } from "@/components/panel/primitives";
 import { capShortKey } from "@/pages/panels/admin/helpers";
 import { usePanelT } from "@/lib/panel-format";
+import { downloadCsv } from "@/lib/panel-download";
 import { usePanelData } from "@/lib/panel-data";
 
 const AdminRoles = () => {
@@ -28,7 +29,29 @@ const AdminRoles = () => {
       <PageHead
         title={t("ar_title")}
         sub={t("ar_sub")}
-        actions={<Btn icon="down">{t("export")}</Btn>}
+        actions={
+          /* The matrix is the argument this screen makes, and it is what a
+             compliance reviewer asks to be sent. One row per role, one column
+             per capability, ticked or not. */
+          <Btn
+            icon="down"
+            onClick={() =>
+              downloadCsv(
+                "roles-and-capabilities",
+                [t("ar_role"), t("ar_scope"), ...CAPS.map(([, label]) => t(label))],
+                ROLES.flatMap((group) =>
+                  group.items.map((r) => [
+                    t(r[1]),
+                    t(`sc_${r[3]}`),
+                    ...CAPS.map(([c]) => (r[2].includes(c) ? "x" : "")),
+                  ]),
+                ),
+              )
+            }
+          >
+            {t("export")}
+          </Btn>
+        }
       />
 
       <div className="grid g3" style={{ marginBottom: 14 }}>

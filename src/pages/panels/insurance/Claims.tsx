@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 import { Btn, PageHead, Pill, Tbl } from "@/components/panel/primitives";
 import { usePanelT } from "@/lib/panel-format";
+import { downloadCsv } from "@/lib/panel-download";
 import { usePanelData } from "@/lib/panel-data";
 
 const InsuranceClaims = () => {
@@ -18,7 +19,28 @@ const InsuranceClaims = () => {
       <PageHead
         title={t("i_title")}
         sub={t("i_sub")}
-        actions={<Btn icon="down">{t("export")}</Btn>}
+        actions={
+          <Btn
+            icon="down"
+            onClick={() =>
+              downloadCsv(
+                "claims",
+                [t("i_ref"), t("i_kind"), t("i_holder"), t("i_lot"), t("i_amt"), t("i_date"), t("i_st")],
+                CLAIMS.map((c) => [
+                  c.c,
+                  t(`k_${c.kind}`),
+                  c.holder,
+                  c.lot,
+                  c.amt,
+                  c.date,
+                  t(`s_${c.st}`),
+                ]),
+              )
+            }
+          >
+            {t("export")}
+          </Btn>
+        }
       />
       <Tbl
         min={920}
@@ -37,7 +59,7 @@ const InsuranceClaims = () => {
           <tr
             key={c.c}
             className="click"
-            onClick={() => navigate("/insurance/claim")}
+            onClick={() => navigate(`/insurance/claim?c=${c.c}`)}
           >
             <td>
               <span className="lotid">{c.c}</span>

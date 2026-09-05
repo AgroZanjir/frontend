@@ -7,7 +7,7 @@
  * threshold and the affected lot are all here.
  */
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import PanelIcon from "@/components/panel/icons";
 import { Spark } from "@/components/panel/charts";
@@ -24,25 +24,34 @@ import { usePanelT } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
 const InsuranceClaim = () => {
+  const [params] = useSearchParams();
   const { CLAIMS, EXCURSION, findLot } = usePanelData();
   const { t, nf, money, dur } = usePanelT();
 
-  const open = CLAIMS.find((x) => x.st === "review") ?? CLAIMS[0];
+  // One claim, and the one that was opened. This screen used to read `CLAIMS[0]`
+  // for everything it displayed and act on `find(st === "review")` - so with a
+  // second claim in the list, the approve button decided a claim the reader was
+  // not looking at. The fallback is the one awaiting a decision, which is the
+  // right landing when the sidebar brought you here rather than a row.
+  const asked = params.get("c");
+  const c =
+    CLAIMS.find((x) => x.c === asked) ??
+    CLAIMS.find((x) => x.st === "review") ??
+    CLAIMS[0];
 
   // Approving sends the claimed figure through as the assessed one, because
   // this screen has no adjuster's field yet. That is a gap, not a rule: the
   // API takes an assessed amount precisely because the two differ.
   const decide = useAction(
     (status: string) =>
-      api.post(`/finance/claims/${open.c}/decide/`, {
+      api.post(`/finance/claims/${c.c}/decide/`, {
         status,
-        assessed_minor: status === "approved" ? Math.round(open.amt * 100) : 0,
+        assessed_minor: status === "approved" ? Math.round(c.amt * 100) : 0,
       }),
     { success: "act_decided", capability: "decide" },
   );
   const navigate = useNavigate();
 
-  const c = CLAIMS[0];
   const e = EXCURSION;
   const l = findLot(c.lot);
   const contents = ["e_c1", "e_c2", "e_c3", "e_c4", "e_c5"];

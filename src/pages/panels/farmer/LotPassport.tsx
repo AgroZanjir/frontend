@@ -12,8 +12,9 @@
  * rather than a report.
  */
 
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import PanelIcon from "@/components/panel/icons";
 import {
@@ -27,30 +28,75 @@ import {
   Tbl,
 } from "@/components/panel/primitives";
 import { usePanelT, daysLeft, storageAge } from "@/lib/panel-format";
+import api from "@/lib/api";
+import { usePanelToasts } from "@/lib/panel-actions";
+import { loadLotPassport } from "@/lib/panel-api";
 import { usePanelData } from "@/lib/panel-data";
 import { panelByPath } from "@/lib/panels";
 
 type Tab = "over" | "hist" | "qc" | "fin";
 
 /**
- * The demo dataset carries one fully-documented lot. Every lot row opens it,
- * exactly as the prototype does, rather than showing a half-empty passport for
- * a lot whose events were never invented.
+ * The lot the sidebar opens on.
+ *
+ * The demo dataset carries one fully-documented lot, and arriving from the nav
+ * names none, so this is the one worth showing. A lot row names its own lot in
+ * the query string and that one is fetched - reading one lot's chain of custody
+ * under another lot's code is worse than a thin page.
  */
 const FLAGSHIP = "AZ-2026-SMQ-0412";
 
 const LotPassport = () => {
-  const { EVENTS, FARMS, PRODUCTS, QC, findLot, findZone } = usePanelData();
+  const { EVENTS, FARMS, LOTS, PRODUCTS, QC, findLot, findZone } = usePanelData();
+  const [params] = useSearchParams();
+
+  // Only a lot that exists; a hand-typed code should not blank the screen.
+  const asked = params.get("l");
+  const code = LOTS.some((x) => x.c === asked) ? (asked as string) : FLAGSHIP;
+
+  // The bundle already carries the flagship's history. Anything else is one
+  // request, and until it lands the page renders with the lot's own summary
+  // and an empty history rather than somebody else's.
+  const named = useQuery({
+    queryKey: ["lot-passport", code],
+    queryFn: () => loadLotPassport(code),
+    enabled: code !== FLAGSHIP,
+  });
+  const events = code === FLAGSHIP ? EVENTS : (named.data?.EVENTS ?? []);
+  const qc = code === FLAGSHIP ? QC : (named.data?.QC ?? []);
   const { t, nf, pn, money, ev } = usePanelT();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [tab, setTab] = useState<Tab>("over");
 
-  const l = findLot(FLAGSHIP);
+  const l = findLot(code);
   const z = findZone(l.z);
   const panel = panelByPath(pathname);
   const backTo =
     panel?.id === "f" ? "/farmer/lots" : (panel?.path ?? "/farmer");
+
+  // Not a `useAction`: that one reports "saved" on success, and this writes
+  // nothing - it re-runs the hashes and reports what they say, which is a
+  // different answer in each direction.
+  const { push } = usePanelToasts();
+  const [verifying, setVerifying] = useState(false);
+  const verify = async () => {
+    setVerifying(true);
+    try {
+      const answer = await api.get<{ events: number; chain_intact: boolean }>(
+        `/lots/${encodeURIComponent(code)}/verify-chain/`,
+      );
+      push({
+        tone: answer.chain_intact ? "good" : "crit",
+        title: t(answer.chain_intact ? "ci_intact" : "ci_broken"),
+        detail: `${answer.events} ${t("ci_events")}`,
+      });
+    } catch {
+      push({ tone: "crit", title: t("act_failed") });
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const tabs: Tab[] = ["over", "hist", "qc", "fin"];
 
@@ -171,13 +217,21 @@ const LotPassport = () => {
         <PanelCard
           head={t("t_hist")}
           tools={
-            <Btn sm icon="check">
+            /* The tamper evidence is only evidence if it can be re-run. The
+               API recomputes every hash in order and answers with the count
+               it walked, so the toast says how many rather than just "ok". */
+            <Btn
+              sm
+              icon="check"
+              disabled={verifying}
+              onClick={() => void verify()}
+            >
               {t("ci_verify")}
             </Btn>
           }
         >
           <div className="tl">
-            {EVENTS.map((e) => (
+            {events.map((e) => (
               <div className="tl-row" key={e.at}>
                 <div
                   className={`tl-dot ${e.acc ? "acc" : ""}${e.warn ? " wr" : ""}`}
@@ -196,7 +250,7 @@ const LotPassport = () => {
             ))}
           </div>
           <Note style={{ marginTop: 14 }}>
-            {t("ci_intact")} · {EVENTS.length} {t("ci_events")}
+            {t("ci_intact")} · {events.length} {t("ci_events")}
           </Note>
         </PanelCard>
       )}
@@ -214,7 +268,7 @@ const LotPassport = () => {
             [t("qc_verdict")],
           ]}
         >
-          {QC.map((r) => (
+          {qc.map((r) => (
             <tr key={r.s}>
               <td>{t(`q_${r.s}`)}</td>
               <td className="mono">{r.d}</td>
