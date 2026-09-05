@@ -1349,6 +1349,7 @@
     "act_resolved": "Bartaraf etilgan deb belgilandi",
     "act_invited": "Taklif yuborildi",
     "act_status": "Holat o‘zgartirildi",
+    "act_role": "Rol o‘zgartirildi",
     "act_verified": "Tekshiruv qayd etildi",
     "act_granted": "Ruxsat berildi",
     "act_revoked": "Ruxsat bekor qilindi",

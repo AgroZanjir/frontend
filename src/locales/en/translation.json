@@ -1371,6 +1371,7 @@
     "act_resolved": "Marked resolved",
     "act_invited": "Invitation sent",
     "act_status": "Status changed",
+    "act_role": "Role changed",
     "act_verified": "Check recorded",
     "act_granted": "Access granted",
     "act_revoked": "Access revoked",

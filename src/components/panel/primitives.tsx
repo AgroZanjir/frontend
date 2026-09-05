@@ -223,7 +223,9 @@ export const Btn = ({
   cls?: string;
   sm?: boolean;
   disabled?: boolean;
-  onClick?: () => void;
+  // The event is passed through because a button inside a clickable row
+  // has to be able to stop the row's own handler.
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   style?: React.CSSProperties;
   type?: "button" | "submit";
 }) => (

@@ -4,7 +4,16 @@
  * The capability chips are the honest version of "role": rather than asking an
  * administrator to remember what "QC inspector" is allowed to do, the screen
  * lists the primitives that role actually carries.
+ *
+ * The person is named in the query string rather than the path because the
+ * screen is also a nav item, and a nav link cannot fill in a path parameter.
+ * Arriving from the sidebar with nobody named shows the first person on the
+ * list, which is a starting point rather than a wrong answer - but the two
+ * buttons here change somebody, so they act on whoever is actually shown.
  */
+
+import { useSearchParams } from "react-router-dom";
+import { useState } from "react";
 
 import {
   Btn,
@@ -15,16 +24,38 @@ import {
   Tbl,
 } from "@/components/panel/primitives";
 import { useLabels } from "@/pages/panels/admin/helpers";
+import api from "@/lib/api";
+import { useAction } from "@/lib/panel-actions";
 import { usePanelT } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
 const AdminUser = () => {
   const { roleLabelKey, capLabelKey, roleCaps } = useLabels();
-  const { AUDIT, ORGS, USERS } = usePanelData();
+  const { AUDIT, ORGS, ROLES, USERS } = usePanelData();
   const { t } = usePanelT();
+  const [params] = useSearchParams();
 
-  const u = USERS[2];
-  const o = ORGS[u.org];
+  const asked = params.get("u");
+  const u = USERS.find((x) => x.id === asked) ?? USERS[0];
+  // Nobody on the platform at all is a fresh install, not an error.
+  const o = u ? ORGS[u.org] : undefined;
+
+  // Held here rather than derived from `u` so the select does not snap back
+  // while the change is in flight and the panel data is refetching.
+  const [role, setRole] = useState<string | null>(null);
+  const chosen = role ?? u?.role ?? "";
+
+  const setStatus = useAction(
+    (id: string, status: string) =>
+      api.post(`/users/${id}/status/`, { status }),
+    { success: "act_status", capability: "administer" },
+  );
+  const setRoleOnServer = useAction(
+    (id: string, next: string) => api.post(`/users/${id}/role/`, { role: next }),
+    { success: "act_role", capability: "administer" },
+  );
+
+  if (!u || !o) return null;
   // Their own entries first; the tail keeps the panel from looking empty for a
   // person who has not acted today.
   const trail = AUDIT.filter((a) => a.who === u.n)
@@ -37,8 +68,43 @@ const AdminUser = () => {
         title={u.n}
         actions={
           <>
-            <Btn icon="lien">{t("au_reset")}</Btn>
-            <Btn cls="btn-q">{t("au_suspend")}</Btn>
+            {/* Changing a role is picking one and applying it, in that order.
+                A bare "change role" button had nowhere to say what to. */}
+            <select
+              className="inp"
+              style={{ width: 210 }}
+              value={chosen}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              {ROLES.map((group) => (
+                <optgroup key={group.g} label={t(group.g)}>
+                  {group.items.map((r) => (
+                    <option key={r[0]} value={r[0]}>
+                      {t(r[1])}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            <Btn
+              icon="lien"
+              disabled={setRoleOnServer.disabled || chosen === u.role}
+              onClick={() => void setRoleOnServer.run(u.id, chosen)}
+            >
+              {t("au_reset")}
+            </Btn>
+            <Btn
+              cls="btn-q"
+              disabled={setStatus.disabled}
+              onClick={() =>
+                void setStatus.run(
+                  u.id,
+                  u.st === "suspended" ? "active" : "suspended",
+                )
+              }
+            >
+              {u.st === "suspended" ? t("au_restore") : t("au_suspend")}
+            </Btn>
           </>
         }
       />

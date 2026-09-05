@@ -67,7 +67,7 @@ const AdminUsers = () => {
             // Two people share a name more often than anyone plans for.
             key={u.id}
             className="click"
-            onClick={() => navigate("/admin/user")}
+            onClick={() => navigate(`/admin/user?u=${u.id}`)}
           >
             <td>
               <div className="row" style={{ gap: 8 }}>
@@ -100,17 +100,23 @@ const AdminUsers = () => {
             <td className="r">
               {/* Suspending is not deleting. The person keeps their history,
                   their audit trail keeps its actor, and the account stops
-                  opening. Restoring is the same call the other way. */}
+                  opening. Restoring is the same call the other way.
+
+                  The click has to stop here: the row navigates to the person,
+                  so without this the button suspended them and then walked
+                  away from the result, which read as a button that did
+                  nothing. */}
               <Btn
                 sm
                 cls="btn-q"
                 disabled={setStatus.disabled}
-                onClick={() =>
+                onClick={(e) => {
+                  e.stopPropagation();
                   void setStatus.run(
                     u.id,
                     u.st === "suspended" ? "active" : "suspended",
-                  )
-                }
+                  );
+                }}
               >
                 {u.st === "suspended" ? t("au_restore") : t("au_suspend")}
               </Btn>
