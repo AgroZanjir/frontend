@@ -288,11 +288,14 @@ export const Field = ({
   label,
   required,
   hint,
+  error,
   children,
 }: {
   label: ReactNode;
   required?: boolean;
   hint?: ReactNode;
+  /** What the server said about this value. Replaces the hint while it holds. */
+  error?: ReactNode;
   children: ReactNode;
 }) => (
   <div className="field">
@@ -300,7 +303,9 @@ export const Field = ({
       {label} {required && <span className="reqd">*</span>}
     </label>
     {children}
-    {hint && <span className="hint">{hint}</span>}
+    {(error || hint) && (
+      <span className={error ? "hint hint-err" : "hint"}>{error ?? hint}</span>
+    )}
   </div>
 );
 

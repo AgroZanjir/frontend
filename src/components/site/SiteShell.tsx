@@ -458,6 +458,7 @@ export const Band = ({
 
 /** A pill-shaped site button. `to` makes it a link, `onClick` a button. */
 export const SiteBtn = ({
+  disabled,
   children,
   to,
   onClick,
@@ -469,6 +470,7 @@ export const SiteBtn = ({
   children: React.ReactNode;
   to?: string;
   onClick?: () => void;
+  disabled?: boolean;
   cls?: string;
   sm?: boolean;
   icon?: string;
@@ -487,7 +489,12 @@ export const SiteBtn = ({
       {inner}
     </Link>
   ) : (
-    <button className={className} onClick={onClick} style={style}>
+    <button
+      className={className}
+      onClick={onClick}
+      disabled={disabled}
+      style={style}
+    >
       {inner}
     </button>
   );

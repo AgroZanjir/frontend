@@ -46,6 +46,40 @@ const publicGet = async <T>(path: string): Promise<T> => {
   return (await response.json()) as T;
 };
 
+/** What the contact form sends. */
+export interface Enquiry {
+  name: string;
+  organisation: string;
+  email: string;
+  phone: string;
+  topic: string;
+  message: string;
+}
+
+/**
+ * Send an enquiry.
+ *
+ * Throws with the field errors the API answered, so the form can put each one
+ * where it belongs instead of saying "something went wrong" about an address
+ * with no @ in it.
+ */
+export const sendEnquiry = async (
+  body: Enquiry,
+): Promise<Record<string, string[]> | null> => {
+  const response = await fetch(`${API_V1}/enquiries/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (response.ok) return null;
+  if (response.status === 429) return { __all__: ["throttled"] };
+  try {
+    return (await response.json()) as Record<string, string[]>;
+  } catch {
+    return { __all__: ["failed"] };
+  }
+};
+
 export const useShowcaseLot = (code = SHOWCASE_LOT.code): ShowcaseLot => {
   const { data } = useQuery({
     queryKey: ["public-lot", code],

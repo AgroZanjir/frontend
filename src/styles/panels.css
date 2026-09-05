@@ -1128,6 +1128,12 @@ th.r {
   font-size: 11px;
   color: var(--ink-3);
 }
+/* What the server said about this value. A rejection in hint grey reads as
+   advice, and the reader tries to send the same thing again. */
+.hint-err {
+  color: var(--crit);
+  font-weight: 500;
+}
 .reqd {
   color: var(--crit);
 }
