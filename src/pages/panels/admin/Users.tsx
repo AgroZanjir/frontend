@@ -9,7 +9,7 @@
 
 import { useNavigate } from "react-router-dom";
 
-import { Btn, PageHead, Tag, Tbl } from "@/components/panel/primitives";
+import { Btn, Note, PageHead, Tag, Tbl } from "@/components/panel/primitives";
 import { useLabels } from "@/pages/panels/admin/helpers";
 import api from "@/lib/api";
 import { useAction } from "@/lib/panel-actions";
@@ -36,6 +36,9 @@ const AdminUsers = () => {
 
   return (
     <>
+      {setStatus.missing && (
+        <Note style={{ marginBottom: 12 }}>{t("act_no_cap_n")}</Note>
+      )}
       <PageHead
         title={t("au_title")}
         sub={t("au_sub")}

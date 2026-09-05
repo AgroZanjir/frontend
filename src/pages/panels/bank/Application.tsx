@@ -5,12 +5,13 @@
  * question a credit officer is answering is not "how much" but "against what".
  */
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import PanelIcon from "@/components/panel/icons";
 import {
   Btn,
   KV,
+  Note,
   PageHead,
   PanelCard,
   Pill,
@@ -23,15 +24,22 @@ import { usePanelT, daysLeft } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
 const BankApplication = () => {
+  const [params] = useSearchParams();
   const { FINAPPS, findLot } = usePanelData();
   const { t, nf, pn, money } = usePanelT();
   const navigate = useNavigate();
 
-  // The application under review is what this screen is about - and one with
-  // collateral, because the whole page is about what secures it. A pre-export
-  // application with no lots yet is a real state and this is not the screen
-  // that shows it.
+  // Whichever application was opened. It used to pick the one in review, so
+  // every row on the list opened the same page - and worse, approving it moved
+  // it out of review, so the screen quietly switched to a different
+  // application and the decision looked like it had not happened.
+  //
+  // Falling back to one under review is right for arriving from the sidebar:
+  // that is the one with a decision waiting. One with collateral is preferred
+  // because the whole page is about what secures it.
+  const asked = params.get("a");
   const a =
+    FINAPPS.find((x) => x.c === asked) ??
     FINAPPS.find((x) => x.st === "review" && x.lots.length) ??
     FINAPPS.find((x) => x.lots.length) ??
     FINAPPS[0];
@@ -172,6 +180,15 @@ const BankApplication = () => {
           </PanelCard>
 
           <PanelCard head={t("ba_decide")}>
+            {/* A credit officer holds `transact` and not `decide` - the
+                approval is a separate person on purpose. Saying so is the
+                point: the buttons used to be grey and silent, which reads as
+                a broken screen rather than as somebody else's decision. */}
+            {decide.missing && (
+              <Note style={{ marginBottom: 10 }}>
+                {t("act_no_cap_n")}
+              </Note>
+            )}
             <div className="row" style={{ gap: 8 }}>
               <Btn
                 cls="btn-p"

@@ -36,7 +36,7 @@ const BankApplications = () => {
           <tr
             key={a.c}
             className="click"
-            onClick={() => navigate("/bank/application")}
+            onClick={() => navigate(`/bank/application?a=${a.c}`)}
           >
             <td>
               <span className="lotid">{a.c}</span>

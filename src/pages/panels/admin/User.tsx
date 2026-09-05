@@ -18,6 +18,7 @@ import { useState } from "react";
 import {
   Btn,
   KV,
+  Note,
   PageHead,
   PanelCard,
   Tag,
@@ -64,6 +65,13 @@ const AdminUser = () => {
 
   return (
     <>
+      {/* A verification officer and an auditor can both open this panel and
+          neither carries `administer`. The buttons used to be grey and
+          silent, which reads as a broken screen rather than as somebody
+          else's job. */}
+      {setStatus.missing && (
+        <Note style={{ marginBottom: 12 }}>{t("act_no_cap_n")}</Note>
+      )}
       <PageHead
         title={u.n}
         actions={

@@ -14,6 +14,7 @@ import { describe, expect, it } from "vitest";
 
 import { FIXTURES } from "@/lib/panel-fixtures";
 import { capLabelKey, capShortKey } from "@/pages/panels/admin/helpers";
+import { capabilityLabelKey } from "@/lib/panel-actions";
 import en from "@/locales/en/translation.json";
 import ru from "@/locales/ru/translation.json";
 import uz from "@/locales/uz/translation.json";
@@ -53,6 +54,15 @@ describe("panel translations", () => {
     expect([...new Set(keys)].filter((k) => !(k in uz.panel)).sort()).toEqual(
       [],
     );
+  });
+
+  it("name every capability the refusal toast can mention", () => {
+    // `useAction` cannot read the catalogue - the public panel has no dataset -
+    // so it carries its own map, and this is what stops that map drifting. It
+    // had already sent `panel.c_administer` to a reader as an answer.
+    FIXTURES.CAPS.forEach(([code, label]) => {
+      expect(capabilityLabelKey(code)).toBe(label);
+    });
   });
 
   it("include every key the screens ask for by name", () => {

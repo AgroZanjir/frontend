@@ -76,6 +76,17 @@ export const usePanelToasts = (): ToastState => {
   return state;
 };
 
+/**
+ * The label key for a capability.
+ *
+ * Not simply `c_<code>`: two of the ten are named short in the label file,
+ * which is why the toast said `c_administer` back to the reader. Same two
+ * exceptions as the permission matrix's `capShortKey`. Kept honest by a
+ * test against the reference catalogue rather than by hand.
+ */
+export const capabilityLabelKey = (code: string): string =>
+  ({ administer: "c_admin", configure: "c_config" })[code] ?? `c_${code}`;
+
 interface ActionOptions {
   /** i18n key for the line the toast shows on success. */
   success: string;
@@ -85,9 +96,14 @@ interface ActionOptions {
    * The capability the endpoint requires.
    *
    * The API is the authority and refuses without it; naming it here lets the
-   * screen stop offering the button first. A lab approver holds `approve` and
-   * not `capture`, so the observation form was a form that could only ever
-   * fail - which is a worse answer than a disabled button and a reason.
+   * screen say so before the request. A lab approver holds `approve` and not
+   * `capture`, so the observation form was a form that could only ever fail.
+   *
+   * What it must not do is disable the button and say nothing. A control that
+   * is grey and silent is indistinguishable from a broken one, and that is
+   * exactly how it was read: "approve does not work" and "suspend does not
+   * work" were both a role without the capability. So the button stays live
+   * and the click answers - `run` sends no request it knows will be refused.
    */
   capability?: Capability;
 }
@@ -116,13 +132,10 @@ export const useAction = <A extends unknown[], R>(
 
   const run = async (...args: A): Promise<R | undefined> => {
     if (!allowed) {
-      // Should not be reachable - the button is disabled - but a screen that
-      // forgets to disable it must still not send a request it knows will be
-      // refused.
       push({
         tone: "warn",
         title: t("act_no_cap"),
-        detail: t(`c_${capability}`),
+        detail: `${t(capabilityLabelKey(capability))} - ${t("act_no_cap_d")}`,
       });
       return undefined;
     }
@@ -149,8 +162,15 @@ export const useAction = <A extends unknown[], R>(
     error,
     /** False when the session's role does not carry the capability. */
     allowed,
-    /** `disabled` for the button: busy, or not allowed at all. */
-    disabled: busy || !allowed,
+    /**
+     * `disabled` for the button: only while the request is in flight.
+     *
+     * Not carrying the capability deliberately does not disable it - see the
+     * note on `capability` above. The click explains instead.
+     */
+    disabled: busy,
+    /** The capability the session is missing, for a screen that wants to say so. */
+    missing: allowed ? undefined : capability,
   };
 };
 

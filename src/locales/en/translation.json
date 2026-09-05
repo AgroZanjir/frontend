@@ -1407,6 +1407,8 @@
     "au_restore": "Restore",
     "ba_nocoll": "No collateral pledged yet",
     "act_no_cap": "Your role does not allow this",
+    "act_no_cap_d": "this capability is not part of your role",
+    "act_no_cap_n": "Your role does not carry this. Whoever holds it can act here; your sign-in decides what this screen offers.",
     "w_ai_e_out": "Your session has ended. Sign in again.",
     "w_ai_p_title": "Ask the platform",
     "w_ai_p_sub": "Reads your records. Changes nothing.",

@@ -1385,6 +1385,8 @@
     "au_restore": "Tiklash",
     "ba_nocoll": "Hozircha garov yo‘q",
     "act_no_cap": "Rolingiz bunga ruxsat bermaydi",
+    "act_no_cap_d": "bu imkoniyat rolingizga kirmaydi",
+    "act_no_cap_n": "Rolingizda bu yo‘q. Bu imkoniyatga ega shaxs amalga oshira oladi; ekran nimani taklif qilishini kirgan hisobingiz belgilaydi.",
     "w_ai_e_out": "Seans tugadi. Qaytadan kiring.",
     "w_ai_p_title": "Platformadan so‘rang",
     "w_ai_p_sub": "Yozuvlaringizni o‘qiydi. Hech narsani o‘zgartirmaydi.",
