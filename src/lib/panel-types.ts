@@ -96,6 +96,8 @@ export interface Lot {
 }
 
 export interface Arrival {
+  /** The row's own id. One lorry makes two runs; the plate is not an identity. */
+  id: string;
   t: string;
   v: string;
   farm: number;
@@ -319,6 +321,8 @@ export interface PlatformUser {
 }
 
 export interface AuditEntry {
+  /** The row's own id. The log records several actions in the same second. */
+  id: string;
   at: string;
   who: string;
   org: string;

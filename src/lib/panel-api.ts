@@ -376,6 +376,7 @@ export const loadPanelData = async (): Promise<PanelData> => {
     FARMS: farms,
     LOTS: lotRows,
     ARRIVALS: arrivals.results.map((a: any): Arrival => ({
+      id: a.id,
       t: clock(a.expected_at),
       v: a.vehicle,
       farm: farmIndex.get(a.farm) ?? 0,
@@ -713,6 +714,7 @@ const loadAdministration = async (): Promise<AdminData> => {
         ini: u.initials,
       })),
       AUDIT: audit.results.map((a) => ({
+        id: a.id,
         at: stamp(a.occurred_at),
         who: a.who,
         org: a.org,

@@ -41,7 +41,9 @@ const HubGate = () => {
       >
         {ARRIVALS.map((a) => (
           <tr
-            key={a.v}
+            // The plate is not an identity: one lorry makes two runs in a
+            // morning, and React then treats the second as the first.
+            key={a.id}
             className="click"
             onClick={() => navigate("/hub/weigh")}
           >

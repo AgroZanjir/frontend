@@ -40,7 +40,9 @@ const AdminAudit = () => {
         ]}
       >
         {AUDIT.map((a) => (
-          <tr key={`${a.at}-${a.obj}`}>
+          // A read and the write it led to land in the same second on the
+          // same object, so neither the time nor the pair identifies a row.
+          <tr key={a.id}>
             <td className="mono t-xs">{a.at}</td>
             <td style={{ fontWeight: 500 }}>{a.who}</td>
             <td className="t-sm muted">{a.org}</td>

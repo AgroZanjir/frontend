@@ -64,7 +64,8 @@ const AdminUsers = () => {
       >
         {USERS.map((u) => (
           <tr
-            key={u.n}
+            // Two people share a name more often than anyone plans for.
+            key={u.id}
             className="click"
             onClick={() => navigate("/admin/user")}
           >

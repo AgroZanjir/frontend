@@ -339,6 +339,7 @@ const LOTS: Lot[] = [
 
 const ARRIVALS: Arrival[] = [
   {
+    id: "arrival-1",
     t: "07:12",
     v: "01 A 234 BC",
     farm: 0,
@@ -347,6 +348,7 @@ const ARRIVALS: Arrival[] = [
     st: "weighing",
   },
   {
+    id: "arrival-2",
     t: "07:40",
     v: "01 B 887 KA",
     farm: 1,
@@ -355,6 +357,7 @@ const ARRIVALS: Arrival[] = [
     st: "queued",
   },
   {
+    id: "arrival-3",
     t: "08:05",
     v: "40 C 119 AB",
     farm: 2,
@@ -363,6 +366,7 @@ const ARRIVALS: Arrival[] = [
     st: "queued",
   },
   {
+    id: "arrival-4",
     t: "08:30",
     v: "01 D 552 MN",
     farm: 1,
@@ -1262,6 +1266,7 @@ const USERS: PlatformUser[] = [
 
 const AUDIT: AuditEntry[] = [
   {
+    id: "audit-1",
     at: "2026-08-26 10:12",
     who: "A. Bekmurodov",
     org: "Agrobank ATB",
@@ -1270,6 +1275,7 @@ const AUDIT: AuditEntry[] = [
     k: "view",
   },
   {
+    id: "audit-2",
     at: "2026-08-26 09:15",
     who: "D. Yusupov",
     org: "Samarqand Hub Operator",
@@ -1278,6 +1284,7 @@ const AUDIT: AuditEntry[] = [
     k: "capture",
   },
   {
+    id: "audit-3",
     at: "2026-08-26 08:33",
     who: "M. Karimova",
     org: "Uzagrosug‘urta AJ",
@@ -1286,6 +1293,7 @@ const AUDIT: AuditEntry[] = [
     k: "view",
   },
   {
+    id: "audit-4",
     at: "2026-08-25 16:02",
     who: "A. Bekmurodov",
     org: "Agrobank ATB",
@@ -1294,6 +1302,7 @@ const AUDIT: AuditEntry[] = [
     k: "decide",
   },
   {
+    id: "audit-5",
     at: "2026-08-25 11:20",
     who: "M. Tulyaganova",
     org: "Agro Zanjir",
@@ -1302,6 +1311,7 @@ const AUDIT: AuditEntry[] = [
     k: "verify",
   },
   {
+    id: "audit-6",
     at: "2026-08-24 02:40",
     who: "SENSOR-CD02-B",
     org: "—",
@@ -1310,6 +1320,7 @@ const AUDIT: AuditEntry[] = [
     k: "capture",
   },
   {
+    id: "audit-7",
     at: "2026-08-23 14:55",
     who: "A. Nazarov",
     org: "Agro Zanjir",
