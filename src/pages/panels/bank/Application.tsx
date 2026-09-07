@@ -89,6 +89,33 @@ const BankApplication = () => {
       api.post(`/finance/applications/${a.c}/decide/`, { status }),
     { success: "act_decided", capability: "decide" },
   );
+
+  // The rest of the file's life, which had endpoints and no buttons. Each is
+  // the officer's work rather than the approver's - `transact`, not `decide`:
+  // the approver commits the bank, the officer moves the paperwork. The API
+  // refuses anything out of order anyway; the screen simply does not offer it.
+  const review = useAction(
+    () => api.post(`/finance/applications/${a.c}/review/`),
+    { success: "act_reviewing", capability: "transact" },
+  );
+  const disburse = useAction(
+    () => api.post(`/finance/applications/${a.c}/disburse/`),
+    { success: "act_disbursed", capability: "transact" },
+  );
+  const repay = useAction(
+    () => api.post(`/finance/applications/${a.c}/repay/`),
+    { success: "act_repaid", capability: "transact" },
+  );
+
+  // What may follow this status, as the API's own table has it.
+  const decidable = a?.st === "submitted" || a?.st === "review";
+  const step = decidable
+    ? decide
+    : a?.st === "approved"
+      ? disburse
+      : a?.st === "disbursed"
+        ? repay
+        : null;
   const l = a ? findLot(a.lots[0]) : undefined;
 
   return (
@@ -221,28 +248,76 @@ const BankApplication = () => {
                 approval is a separate person on purpose. Saying so is the
                 point: the buttons used to be grey and silent, which reads as
                 a broken screen rather than as somebody else's decision. */}
-            {decide.missing && (
-              <Note style={{ marginBottom: 10 }}>
-                {t("act_no_cap_n")}
-              </Note>
+            {step?.missing && (
+              <Note style={{ marginBottom: 10 }}>{t("act_no_cap_n")}</Note>
             )}
+
+            {/* An application that has arrived is taken up before it is
+                answered, and the applicant is waiting to be told exactly
+                that. Offered beside the decision rather than instead of it:
+                a small file can be approved straight off the queue. */}
+            {a?.st === "submitted" && (
+              <div className="row" style={{ gap: 8, marginBottom: 8 }}>
+                <Btn
+                  icon="apps"
+                  disabled={review.disabled}
+                  onClick={() => void review.run()}
+                >
+                  {t("ba_review")}
+                </Btn>
+              </div>
+            )}
+
             <div className="row" style={{ gap: 8 }}>
-              <Btn
-                cls="btn-p"
-                icon="check"
-                disabled={decide.disabled}
-                onClick={() => void decide.run("approved")}
-              >
-                {t("ba_approve")}
-              </Btn>
-              <Btn
-                cls="btn-q"
-                disabled={decide.disabled}
-                onClick={() => void decide.run("rejected")}
-              >
-                {t("ba_reject")}
-              </Btn>
+              {decidable && (
+                <>
+                  <Btn
+                    cls="btn-p"
+                    icon="check"
+                    disabled={decide.disabled}
+                    onClick={() => void decide.run("approved")}
+                  >
+                    {t("ba_approve")}
+                  </Btn>
+                  <Btn
+                    cls="btn-q"
+                    disabled={decide.disabled}
+                    onClick={() => void decide.run("rejected")}
+                  >
+                    {t("ba_reject")}
+                  </Btn>
+                </>
+              )}
+              {a?.st === "approved" && (
+                <Btn
+                  cls="btn-p"
+                  icon="coll"
+                  disabled={disburse.disabled}
+                  onClick={() => void disburse.run()}
+                >
+                  {t("ba_disburse")}
+                </Btn>
+              )}
+              {a?.st === "disbursed" && (
+                <Btn
+                  cls="btn-p"
+                  icon="check"
+                  disabled={repay.disabled}
+                  onClick={() => void repay.run()}
+                >
+                  {t("ba_repay")}
+                </Btn>
+              )}
             </div>
+
+            {/* Repaid and rejected are the two ends. Nothing follows either,
+                and a card with no button in it should say why rather than
+                look unfinished. */}
+            {!step && (
+              <p className="t-sm muted" style={{ margin: 0 }}>
+                {t("ba_closed")}
+              </p>
+            )}
           </PanelCard>
         </div>
       </div>

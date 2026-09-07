@@ -176,7 +176,19 @@ export interface FinanceApp {
   kind: "inventory" | "pre_export";
   amt: number;
   cur: "UZS" | "USD";
-  st: "submitted" | "review" | "disbursed" | "repaid";
+  /**
+   * The API's status, passed through. All seven of them: the type used to
+   * list the four the seeded data happens to use, so the screen could not be
+   * written against a status it can plainly be sent.
+   */
+  st:
+    | "draft"
+    | "submitted"
+    | "review"
+    | "approved"
+    | "disbursed"
+    | "repaid"
+    | "rejected";
   lots: string[];
   ltv: number;
   date: string;
@@ -201,7 +213,7 @@ export interface Claim {
   lot: string;
   ev: string | null;
   amt: number;
-  st: "review" | "approved" | "paid";
+  st: "draft" | "review" | "approved" | "paid" | "declined";
   date: string;
   holder: string;
 }
