@@ -5,6 +5,7 @@
  * question a credit officer is answering is not "how much" but "against what".
  */
 
+import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import PanelIcon from "@/components/panel/icons";
@@ -23,6 +24,30 @@ import { useAction } from "@/lib/panel-actions";
 import { usePanelT, daysLeft } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
+/**
+ * The application this browser had open last.
+ *
+ * Wrapped because storage throws rather than returns null where it is turned
+ * off, and a screen must not fail to render over a bookmark.
+ */
+const LAST = "az.bank.application";
+
+const recall = (): string | null => {
+  try {
+    return localStorage.getItem(LAST);
+  } catch {
+    return null;
+  }
+};
+
+const remember = (code: string): void => {
+  try {
+    localStorage.setItem(LAST, code);
+  } catch {
+    /* nothing to do: the next visit starts from the queue instead */
+  }
+};
+
 const BankApplication = () => {
   const [params] = useSearchParams();
   const { FINAPPS, findLot } = usePanelData();
@@ -34,15 +59,27 @@ const BankApplication = () => {
   // it out of review, so the screen quietly switched to a different
   // application and the decision looked like it had not happened.
   //
-  // Falling back to one under review is right for arriving from the sidebar:
-  // that is the one with a decision waiting. One with collateral is preferred
-  // because the whole page is about what secures it.
+  // Arriving from the sidebar names none, and then the right answer is the one
+  // this reader had open last: an approver works through a file over several
+  // visits, and being returned to whatever the queue happens to sort first
+  // means finding their place again every time. Only if there is no last one -
+  // a new browser, cleared storage - does it fall back to one awaiting a
+  // decision, and one with collateral first, because the page is about what
+  // secures it.
   const asked = params.get("a");
   const a =
     FINAPPS.find((x) => x.c === asked) ??
+    FINAPPS.find((x) => x.c === recall()) ??
     FINAPPS.find((x) => x.st === "review" && x.lots.length) ??
     FINAPPS.find((x) => x.lots.length) ??
     FINAPPS[0];
+
+  // Remembered per browser, not per account: it is a bookmark, not a decision,
+  // and it is only ever used to choose between applications this session is
+  // already allowed to read.
+  useEffect(() => {
+    if (a) remember(a.c);
+  }, [a?.c]);
 
   // Approving is not disbursing. The bank's own systems move the money; what
   // the platform records is the decision, which is what a lien is later hung
