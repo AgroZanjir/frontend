@@ -2742,6 +2742,20 @@ body.site .ai-wait i:nth-child(3) {
 }
 
 /* --- what the answer read ------------------------------------------- */
+/* A path the assistant named. Underlined rather than coloured: it sits
+   inside a sentence, and a coloured word mid-sentence reads as emphasis
+   before it reads as a link. */
+body.site .ai-path {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  overflow-wrap: anywhere;
+}
+body.site .ai-path:hover {
+  text-decoration-thickness: 2px;
+}
+
 body.site .ai-evid {
   display: flex;
   flex-wrap: wrap;
@@ -2892,4 +2906,18 @@ body.site .ai-note {
   body.site .ai-launch:hover {
     transform: none;
   }
+}
+
+/* The same on the website's side. See the note in panels.css. */
+body.site .ai-path {
+  color: var(--acc);
+  font-family: var(--b-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.94em;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  border-radius: 3px;
+}
+body.site .ai-path:hover {
+  background: var(--acc-2);
 }

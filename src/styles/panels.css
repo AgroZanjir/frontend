@@ -2019,6 +2019,18 @@ th.r {
   }
 }
 
+/* A path the assistant named, inside a sentence. */
+.pai-path {
+  color: var(--primary-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  overflow-wrap: anywhere;
+}
+.pai-path:hover {
+  text-decoration-thickness: 2px;
+}
+
 /* --- the passports an answer opened --------------------------------- */
 .pai-evid {
   display: flex;
@@ -2159,4 +2171,21 @@ th.r {
   .pai-launch:hover {
     transform: none;
   }
+}
+
+/* A path the assistant wrote, turned into a link by `linkify`.
+   It needs to look like one: rendered in the body's own colour with no
+   underline, it navigated perfectly and no reader could tell it would. */
+.ai-path {
+  color: var(--primary);
+  font-family: var(--fm);
+  font-size: 0.94em;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  border-radius: 3px;
+}
+.ai-path:hover {
+  color: var(--primary-2);
+  background: var(--primary-soft);
 }

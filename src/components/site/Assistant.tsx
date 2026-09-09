@@ -36,6 +36,7 @@ import {
   type Turn,
 } from "@/lib/assistant";
 import { useConversation, type Dispatch } from "@/lib/use-conversation";
+import { linkify } from "@/lib/linkify";
 import { cn } from "@/lib/utils";
 
 /** The three openings. The middle one is a lot code, so it exercises a lookup. */
@@ -70,7 +71,10 @@ const Prose = ({ text }: { text: string }) => (
       .split(/\n{2,}/)
       .filter(Boolean)
       .map((para, i) => (
-        <p key={i}>{para}</p>
+        // Paths become links; everything else stays the text it was. Never
+        // `dangerouslySetInnerHTML` - the model's output is not markup and is
+        // not going to be treated as any.
+        <p key={i}>{linkify(para)}</p>
       ))}
   </>
 );

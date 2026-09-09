@@ -28,6 +28,7 @@ import { Link, useLocation } from "react-router-dom";
 
 import PanelIcon from "@/components/panel/icons";
 import { usePanelT } from "@/lib/panel-format";
+import { useLotLink } from "@/components/panel/LotRow";
 import {
   askPanel,
   useAssistantState,
@@ -35,6 +36,7 @@ import {
   type Turn,
 } from "@/lib/assistant";
 import { useConversation, type Dispatch } from "@/lib/use-conversation";
+import { linkify } from "@/lib/linkify";
 import { cn } from "@/lib/utils";
 
 /**
@@ -74,7 +76,10 @@ const Prose = ({ text }: { text: string }) => (
       .split(/\n{2,}/)
       .filter(Boolean)
       .map((para, i) => (
-        <p key={i}>{para}</p>
+        // Paths become links; everything else stays the text it was. Never
+        // `dangerouslySetInnerHTML` - the model's output is not markup and is
+        // not going to be treated as any.
+        <p key={i}>{linkify(para)}</p>
       ))}
   </>
 );
@@ -89,13 +94,18 @@ const Prose = ({ text }: { text: string }) => (
  */
 const Evidence = ({ lookups }: { lookups: Lookup[] }) => {
   const { t } = usePanelT();
+  // The passport lives inside whichever panel the reader is in, and takes the
+  // code as a query - `/hub/lot?l=…`. There is no top-level `/lot` route, and
+  // this chip linked to one until a lookup in Uzbek made the broken path
+  // visible in the answer text beside it.
+  const lotLink = useLotLink();
   const lots = lookups.filter((l) => l.name === "lot_passport" && l.code);
   if (!lots.length) return null;
 
   return (
     <div className="pai-evid">
       {lots.map((lot) => (
-        <Link key={lot.code} className="pai-eviden" to={`/lot/${lot.code}`}>
+        <Link key={lot.code} className="pai-eviden" to={lotLink(lot.code)}>
           <PanelIcon name="lot" />
           <span className="mono">{lot.code}</span>
           <span>{t("w_ai_p_open")}</span>
