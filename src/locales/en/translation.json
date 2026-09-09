@@ -1421,6 +1421,8 @@
     "w_net_hint": "gross − tare",
     "w_idem": "key",
     "pl_free": "free",
+    "pl_ungraded": "needs grading first",
+    "pl_ungraded_note": "This lot has not been graded yet. Grade it, and it can go on a shelf.",
     "qc_by_hint": "the person signed in",
     "qc_fail": "Fail",
     "q_pre_dispatch": "Before dispatch",

@@ -1399,6 +1399,8 @@
     "w_net_hint": "brutto − tara",
     "w_idem": "kalit",
     "pl_free": "bo‘sh",
+    "pl_ungraded": "avval navlash kerak",
+    "pl_ungraded_note": "Bu lot hali navlanmagan. Navlansa, javonga qo‘yish mumkin.",
     "qc_by_hint": "tizimga kirgan shaxs",
     "qc_fail": "O‘tmadi",
     "q_pre_dispatch": "Jo‘natishdan oldin",

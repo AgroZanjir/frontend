@@ -26,20 +26,26 @@ const TAKEN = [0, 1, 2, 5, 6, 9, 10, 11, 17, 18, 22, 25, 26];
 const TARGET = 13;
 
 const HubPlace = () => {
-  const { t, nf } = usePanelT();
+  const { t, nf, pn } = usePanelT();
   const { LOTS, ZONES, findLot } = usePanelData();
 
   // A lot that is graded and not yet on a shelf is what this screen is for.
   const waiting = LOTS.filter(
     (l) => l.st === "graded" || l.st === "registered",
   );
-  const [code, setCode] = useState(waiting[0]?.c ?? LOTS[0]?.c ?? "");
+  // A graded one first. The list keeps the ungraded ones - opening this screen
+  // is how an operator finds out a lot still needs grading, and the API says
+  // so in as many words - but starting on one made the first click a refusal.
+  const [code, setCode] = useState(
+    waiting.find((l) => l.st === "graded")?.c ?? waiting[0]?.c ?? LOTS[0]?.c ?? "",
+  );
   // A zone that can actually take this lot. It used to offer the first ZEROCO
   // room whatever was in it, so the default put-away for a 5,600 kg lot was a
   // room with 4,400 kg of space - a refusal the operator could be spared. The
   // API is still the authority: fill changes while this screen is open.
   const [zone, setZone] = useState(() => {
-    const first = waiting[0] ?? LOTS[0];
+    const first =
+      waiting.find((l) => l.st === "graded") ?? waiting[0] ?? LOTS[0];
     const fits = (z: (typeof ZONES)[number]) =>
       !first || z.cap - z.used >= first.net;
     return (
@@ -74,7 +80,11 @@ const HubPlace = () => {
         style={{ gridTemplateColumns: "minmax(0,340px) minmax(0,1fr)" }}
       >
         <PanelCard bodyCls="stack" bodyStyle={{ gap: 14 }}>
-          <Field label={t("pl_lot")} hint={t("pl_scan")}>
+          <Field
+            label={t("pl_lot")}
+            hint={t("pl_scan")}
+            error={lot && lot.st !== "graded" ? t("pl_ungraded_note") : undefined}
+          >
             <div className="row" style={{ gap: 6 }}>
               <input
                 className="inp mono"
@@ -83,9 +93,16 @@ const HubPlace = () => {
                 onChange={(e) => setCode(e.target.value.trim())}
                 list="placeable-lots"
               />
+              {/* Only what can go on a shelf, and what still cannot: the API
+                  refuses an ungraded lot, so saying which is which here saves
+                  the operator a refusal they can see coming. */}
               <datalist id="placeable-lots">
-                {LOTS.map((l) => (
-                  <option key={l.c} value={l.c} />
+                {waiting.map((l) => (
+                  <option
+                    key={l.c}
+                    value={l.c}
+                    label={l.st === "graded" ? pn(l.p) : t("pl_ungraded")}
+                  />
                 ))}
               </datalist>
             </div>
