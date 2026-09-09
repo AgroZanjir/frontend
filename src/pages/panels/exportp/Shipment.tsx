@@ -38,12 +38,15 @@ const ExportShipment = () => {
           </>
         }
         actions={
+          /* This opens the customs screen; the lodging happens there. It
+             carried that screen's own label - "Send to Single Window" - so it
+             read as the button that sends, and did not. */
           <Btn
             cls="btn-p"
             icon="cust"
             onClick={() => navigate("/export/customs")}
           >
-            {t("cu_send")}
+            {t("n_cust")}
           </Btn>
         }
       />

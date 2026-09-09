@@ -7,14 +7,28 @@
  * they cannot. The revoke action only appears on the first kind.
  */
 
-import { Btn, Note, PageHead, Tag, Tbl } from "@/components/panel/primitives";
+import { useState } from "react";
+
+import {
+  Btn,
+  Field,
+  Note,
+  PageHead,
+  PanelCard,
+  Tag,
+  Tbl,
+} from "@/components/panel/primitives";
 import api from "@/lib/api";
 import { useAction } from "@/lib/panel-actions";
 import { usePanelT } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
+/** The vocabularies the register is written in, as the seeded grants use them. */
+const SCOPES = ["g_covered", "g_pledged", "g_contract", "g_region", "g_national"];
+const FIELDSETS = ["g_f_trace", "g_f_cond", "g_f_coll", "g_f_agg", "g_f_anon"];
+
 const AdminSharing = () => {
-  const { GRANTS } = usePanelData();
+  const { GRANTS, ORGS } = usePanelData();
 
   // Revoking sets the state and keeps the row: "who could see this in August?"
   // is a question a farmer asks later, and a deleted row cannot answer it. A
@@ -26,13 +40,124 @@ const AdminSharing = () => {
   );
   const { t } = usePanelT();
 
+  // Granting one, which the plus button used to only look like it did. The
+  // endpoint has been there all along; this is the form it never had.
+  const [adding, setAdding] = useState(false);
+  const [org, setOrg] = useState(ORGS[0]?.c ?? "");
+  const [scope, setScope] = useState(SCOPES[0]);
+  const [fields, setFields] = useState(FIELDSETS[0]);
+  const [basis, setBasis] = useState("owner");
+  const [until, setUntil] = useState("");
+
+  const grant = useAction(
+    () =>
+      api.post("/governance/grants/", {
+        grantee_party: org,
+        scope_key: scope,
+        fields_key: fields,
+        basis,
+        ...(until ? { expires_on: until } : {}),
+      }),
+    { success: "act_granted", capability: "administer" },
+  );
+
+  const create = async () => {
+    if (await grant.run()) setAdding(false);
+  };
+
   return (
     <>
       <PageHead
         title={t("ag_title")}
         sub={t("ag_sub")}
-        actions={<Btn icon="plus">{t("save")}</Btn>}
+        actions={
+          <Btn
+            icon="plus"
+            cls={adding ? "btn-q" : undefined}
+            onClick={() => setAdding((was) => !was)}
+          >
+            {adding ? t("cancel") : t("ag_new")}
+          </Btn>
+        }
       />
+      {adding && (
+        <PanelCard style={{ marginBottom: 14 }} bodyCls="stack">
+          <div className="grid g3" style={{ gap: 14 }}>
+            <Field label={t("ag_who")} required>
+              <select
+                className="inp"
+                value={org}
+                onChange={(e) => setOrg(e.target.value)}
+              >
+                {ORGS.map((o) => (
+                  <option key={o.c} value={o.c}>
+                    {o.n}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label={t("ag_scope")} required>
+              <select
+                className="inp"
+                value={scope}
+                onChange={(e) => setScope(e.target.value)}
+              >
+                {SCOPES.map((k) => (
+                  <option key={k} value={k}>
+                    {t(k)}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label={t("ag_fields")} required>
+              <select
+                className="inp"
+                value={fields}
+                onChange={(e) => setFields(e.target.value)}
+              >
+                {FIELDSETS.map((k) => (
+                  <option key={k} value={k}>
+                    {t(k)}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label={t("ag_basis")} required>
+              <select
+                className="inp"
+                value={basis}
+                onChange={(e) => setBasis(e.target.value)}
+              >
+                <option value="owner">{t("g_by_owner")}</option>
+                <option value="law">{t("g_by_law")}</option>
+                <option value="contract">{t("g_by_contract")}</option>
+              </select>
+            </Field>
+            {/* A grant with no end is a grant nobody revisits, so the field is
+                here rather than buried - but it stays optional, because a
+                statutory one genuinely has no end. */}
+            <Field label={t("ag_until")} hint={t("ag_unlimited")}>
+              <input
+                className="inp mono"
+                type="date"
+                value={until}
+                onChange={(e) => setUntil(e.target.value)}
+              />
+            </Field>
+          </div>
+          <div className="row">
+            <Btn
+              cls="btn-p"
+              icon="check"
+              disabled={grant.disabled}
+              onClick={() => void create()}
+            >
+              {t("save")}
+            </Btn>
+          </div>
+        </PanelCard>
+      )}
+
       <Tbl
         min={940}
         head={[

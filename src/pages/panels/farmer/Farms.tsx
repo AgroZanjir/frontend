@@ -6,13 +6,18 @@
  * missing chip and an absent certificate read the same otherwise.
  */
 
+import { useState } from "react";
+
 import {
   Btn,
+  Field,
   KV,
   PageHead,
   PanelCard,
   Tag,
 } from "@/components/panel/primitives";
+import api from "@/lib/api";
+import { useAction } from "@/lib/panel-actions";
 import { usePanelT } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
@@ -20,12 +25,85 @@ const FarmerFarms = () => {
   const { FARMS } = usePanelData();
   const { t, nf } = usePanelT();
 
+  // The button used to be a plus that did nothing. A holding needs a name and
+  // nothing else - the code and the organisation come from the platform and
+  // the session, because a field is registered by whoever farms it.
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState("");
+  const [region, setRegion] = useState("");
+  const [hectares, setHectares] = useState("");
+
+  const add = useAction(
+    () =>
+      api.post("/farms/", {
+        name,
+        region,
+        ...(hectares ? { hectares } : {}),
+      }),
+    { success: "act_saved", capability: "capture" },
+  );
+
+  const save = async () => {
+    if (!(await add.run())) return;
+    setName("");
+    setRegion("");
+    setHectares("");
+    setAdding(false);
+  };
+
   return (
     <>
       <PageHead
         title={t("f_farms")}
-        actions={<Btn icon="plus">{t("save")}</Btn>}
+        actions={
+          <Btn
+            icon="plus"
+            cls={adding ? "btn-q" : undefined}
+            onClick={() => setAdding((was) => !was)}
+          >
+            {adding ? t("cancel") : t("f_farm_new")}
+          </Btn>
+        }
       />
+
+      {adding && (
+        <PanelCard style={{ marginBottom: 14 }} bodyCls="stack">
+          <div className="grid g3" style={{ gap: 14 }}>
+            <Field label={t("f_farm_name")} required>
+              <input
+                className="inp"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </Field>
+            <Field label={t("f_region")}>
+              <input
+                className="inp"
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+              />
+            </Field>
+            <Field label={t("f_ha")}>
+              <input
+                className="inp"
+                inputMode="decimal"
+                value={hectares}
+                onChange={(e) => setHectares(e.target.value)}
+              />
+            </Field>
+          </div>
+          <div className="row">
+            <Btn
+              cls="btn-p"
+              icon="check"
+              disabled={add.disabled || !name.trim()}
+              onClick={() => void save()}
+            >
+              {t("save")}
+            </Btn>
+          </div>
+        </PanelCard>
+      )}
 
       <div className="grid g2">
         {FARMS.map((f) => (

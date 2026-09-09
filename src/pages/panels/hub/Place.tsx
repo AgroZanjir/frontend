@@ -34,9 +34,22 @@ const HubPlace = () => {
     (l) => l.st === "graded" || l.st === "registered",
   );
   const [code, setCode] = useState(waiting[0]?.c ?? LOTS[0]?.c ?? "");
-  const [zone, setZone] = useState(
-    ZONES.find((z) => z.m === "zeroco")?.c ?? ZONES[0]?.c ?? "",
-  );
+  // A zone that can actually take this lot. It used to offer the first ZEROCO
+  // room whatever was in it, so the default put-away for a 5,600 kg lot was a
+  // room with 4,400 kg of space - a refusal the operator could be spared. The
+  // API is still the authority: fill changes while this screen is open.
+  const [zone, setZone] = useState(() => {
+    const first = waiting[0] ?? LOTS[0];
+    const fits = (z: (typeof ZONES)[number]) =>
+      !first || z.cap - z.used >= first.net;
+    return (
+      ZONES.find((z) => z.m === "zeroco" && fits(z))?.c ??
+      ZONES.find(fits)?.c ??
+      ZONES.find((z) => z.m === "zeroco")?.c ??
+      ZONES[0]?.c ??
+      ""
+    );
+  });
   const [position, setPosition] = useState("B-06");
 
   const lot = findLot(code);
@@ -83,9 +96,12 @@ const HubPlace = () => {
               value={zone}
               onChange={(e) => setZone(e.target.value)}
             >
+              {/* The free figure is on the option because the choice is made
+                  here and the refusal comes from there. */}
               {ZONES.map((z) => (
                 <option key={z.c} value={z.c}>
-                  {z.c} — {t(`m_${z.m}`)}
+                  {z.c} — {t(`m_${z.m}`)} · {nf(Math.max(z.cap - z.used, 0))}{" "}
+                  {t("kg")} {t("pl_free")}
                 </option>
               ))}
             </select>
