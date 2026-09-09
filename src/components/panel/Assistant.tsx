@@ -43,12 +43,28 @@ import { cn } from "@/lib/utils";
  */
 const OPENERS = ["w_ai_p_q1", "w_ai_p_q2", "w_ai_p_q3"];
 
-/** Which lookup is running, in words. */
+/**
+ * Which lookup is running, in words.
+ *
+ * One entry per tool the backend exposes. A tool with no entry here still
+ * shows something rather than nothing - `w_ai_t_any` - so adding a tool on the
+ * server can never leave the panel with a blank activity line.
+ */
 const ACTIVITY: Record<string, string> = {
   find_lots: "w_ai_t_lots",
   lot_passport: "w_ai_t_pass",
   find_zones: "w_ai_t_zones",
   find_liens: "w_ai_t_liens",
+  find_arrivals: "w_ai_t_arr",
+  find_excursions: "w_ai_t_exc",
+  find_qc: "w_ai_t_qc",
+  find_trials: "w_ai_t_tri",
+  find_applications: "w_ai_t_apps",
+  find_policies: "w_ai_t_pol",
+  find_claims: "w_ai_t_clm",
+  find_shipments: "w_ai_t_ship",
+  find_exports: "w_ai_t_exp",
+  find_organisations: "w_ai_t_orgs",
 };
 
 /** A paragraph per blank line. The brief asks for prose, and this renders it. */
@@ -208,7 +224,7 @@ const Body = ({ onClose }: { onClose: () => void }) => {
               <div className="pai-act">
                 <PanelIcon name="srch" />
                 <span>
-                  {t(ACTIVITY[activity.name] ?? "w_ai_t_lots")}
+                  {t(ACTIVITY[activity.name] ?? "w_ai_t_any")}
                   {activity.code ? (
                     <>
                       {" "}
