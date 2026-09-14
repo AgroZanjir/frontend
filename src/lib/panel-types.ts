@@ -195,6 +195,27 @@ export interface FinanceApp {
   lender: string;
 }
 
+/**
+ * A row of the document vault as the API returns it.
+ *
+ * `url` is empty for a row that records a paper original somebody else holds -
+ * a certificate the broker has in a drawer is still a document this platform
+ * knows about.
+ */
+export interface PanelDoc {
+  code: string;
+  subject_type: string;
+  subject_code: string;
+  type: string;
+  name_key: string;
+  status: string;
+  reference: string;
+  issued_by: string;
+  url: string;
+  checksum: string;
+  bytes: number;
+}
+
 export interface Lien {
   /** The row's own id: releasing addresses the lien, not the lot. */
   id: string;

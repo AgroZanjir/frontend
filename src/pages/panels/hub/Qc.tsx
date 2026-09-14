@@ -22,8 +22,12 @@ import { useState } from "react";
 
 import api from "@/lib/api";
 import { useAction } from "@/lib/panel-actions";
+import { useQuery } from "@tanstack/react-query";
+import { useRef } from "react";
+
 import { usePanelT } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
+import type { PanelDoc } from "@/lib/panel-types";
 import { usePanelPersona } from "@/lib/panel-session";
 
 const HubQc = () => {
@@ -41,6 +45,45 @@ const HubQc = () => {
 
   const lot = findLot(code);
   const inspector = usePanelPersona()?.name ?? "";
+
+  // What is already attached to this lot. Read from the vault rather than held
+  // on the form: a photograph belongs to the lot, not to the inspection being
+  // typed, and the next inspector should see what the last one took.
+  const attached = useQuery({
+    queryKey: ["lot-documents", code],
+    queryFn: () =>
+      api.get<{ results: PanelDoc[] }>(
+        `/panels/documents/?subject_type=lot&subject_code=${encodeURIComponent(code)}`,
+      ),
+    enabled: Boolean(code),
+  });
+  const photos = (attached.data?.results ?? []).filter(
+    (d) => d.type === "photo" && d.url,
+  );
+  const awaitedLab = (attached.data?.results ?? []).some(
+    (d) => d.type === "lab" && d.status === "pending",
+  );
+
+  const picker = useRef<HTMLInputElement>(null);
+
+  const addPhoto = useAction(
+    (file: File) => {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("subject_type", "lot");
+      form.append("subject_code", code);
+      form.append("doc_type", "photo");
+      return api.post("/documents/upload/", form);
+    },
+    { success: "act_saved", capability: "capture", refresh: false },
+  );
+
+  // Not a second inspection: it records that the report is owed, and the lot
+  // shows it as awaited until the laboratory issues it.
+  const toLab = useAction(
+    () => api.post("/quality/lab-requests/", { lot: code }),
+    { success: "qc_lab_sent", capability: "capture", refresh: false },
+  );
 
   const record = useAction(
     () =>
@@ -77,7 +120,17 @@ const HubQc = () => {
       <PageHead
         title={t("qc_title")}
         sub={t("qc_sub")}
-        actions={<Btn icon="lab">{t("qc_lab")}</Btn>}
+        actions={
+          <Btn
+            icon="lab"
+            disabled={toLab.disabled || !code || awaitedLab}
+            onClick={async () => {
+              if (await toLab.run()) await attached.refetch();
+            }}
+          >
+            {awaitedLab ? t("qc_lab_awaited") : t("qc_lab")}
+          </Btn>
+        }
       />
 
       <div
@@ -190,15 +243,38 @@ const HubQc = () => {
 
           <div>
             <div className="between">
-              <span className="t-label">
-                {t("qc_photo")} <span className="reqd">*</span>
-              </span>
+              {/* No asterisk: the API does not refuse an inspection without
+                  photographs, and a form that says required and then saves
+                  anyway teaches the reader to disbelieve the next asterisk. */}
+              <span className="t-label">{t("qc_photo")}</span>
               <span className="t-xs muted-2">{t("qc_photo_n")}</span>
             </div>
             <div className="row" style={{ marginTop: 8, gap: 8 }}>
-              {[1, 2, 3].map((i) => (
+              {photos.map((d) => (
+                <a
+                  key={d.code}
+                  href={d.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  title={`${d.reference} · ${Math.round(d.bytes / 1024)} kB`}
+                  style={{
+                    width: 74,
+                    height: 60,
+                    borderRadius: "var(--r-sm)",
+                    overflow: "hidden",
+                    display: "block",
+                    border: "1px solid var(--line)",
+                  }}
+                >
+                  <img
+                    src={d.url}
+                    alt={d.reference}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                </a>
+              ))}
+              {!photos.length && (
                 <div
-                  key={i}
                   style={{
                     width: 74,
                     height: 60,
@@ -211,8 +287,29 @@ const HubQc = () => {
                 >
                   <PanelIcon name="cam" />
                 </div>
-              ))}
-              <Btn sm icon="plus" style={{ height: 60 }}>
+              )}
+              {/* `capture` is the phone's camera on a phone and a file
+                  dialogue on the weighbridge PC - the same input either way. */}
+              <input
+                ref={picker}
+                type="file"
+                accept="image/*,application/pdf"
+                capture="environment"
+                hidden
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (!file) return;
+                  if (await addPhoto.run(file)) await attached.refetch();
+                }}
+              />
+              <Btn
+                sm
+                icon="plus"
+                style={{ height: 60 }}
+                disabled={addPhoto.disabled || !code}
+                onClick={() => picker.current?.click()}
+              >
                 {t("qc_add")}
               </Btn>
             </div>
