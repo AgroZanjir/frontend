@@ -137,4 +137,25 @@ describe("linkify", () => {
       "Provenance is public; commerce is not.",
     );
   });
+
+  it("cannot be talked into linking off the site", () => {
+    // react-router 6 carries an open-redirect advisory: a `<Link to>` that
+    // begins with a backslash can leave the origin. This is the one place in
+    // the application where the text of a link comes from outside - a model
+    // writing an answer, steered by whatever a visitor typed at it - so it is
+    // the one place that advisory could bite. It cannot: the first segment has
+    // to be a route this application serves, and no character class in the
+    // pattern admits a backslash.
+    for (const attempt of [
+      "Go to /\\evil.example for more.",
+      "Try /\\/evil.example now.",
+      "See /https://evil.example please.",
+      "Open //evil.example today.",
+      "Visit /showroom\\@evil.example here.",
+    ]) {
+      expect(render(attempt)).not.toContain("evil.example</a>");
+      expect(render(attempt)).not.toContain('href="/\\');
+      expect(render(attempt)).not.toContain('href="//');
+    }
+  });
 });
