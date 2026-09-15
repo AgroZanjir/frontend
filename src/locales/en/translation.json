@@ -515,6 +515,8 @@
     "c_sub": "Temperature and humidity across zones and shipments in transit.",
     "c_live": "Live readings",
     "c_24": "Last 24 hours",
+    "c_12": "Last 12 hours",
+    "w_nw_copied": "Link copied",
     "c_sensor": "Sensor",
     "e_title": "Condition excursion",
     "e_sub": "The insurance evidence bundle is assembled automatically.",

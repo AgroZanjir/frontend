@@ -9,6 +9,8 @@
 import { Spark } from "@/components/panel/charts";
 import { PageHead, PanelCard, Btn, Tag } from "@/components/panel/primitives";
 import { isDeviating } from "@/components/panel/ZoneCard";
+import { useState } from "react";
+
 import { usePanelT } from "@/lib/panel-format";
 import { usePanelData } from "@/lib/panel-data";
 
@@ -19,20 +21,46 @@ const TRACES: Record<string, number[]> = {
   "Z-COLD-02": [4.0, 4.3, 5.2, 6.1, 6.7, 6.9, 6.2, 5.4, 4.6, 4.1, 4.0, 4.0],
 };
 
+/**
+ * How much of each trace to draw, in readings rather than hours: the readings
+ * above are two-hourly, so twelve of them is the day and six is half of it.
+ */
+const RANGES: [string, number][] = [
+  ["c_12", 6],
+  ["c_24", 12],
+];
+
 const HubConditions = () => {
   const { findZone } = usePanelData();
   const { t } = usePanelT();
+
+  // The button said "Last 24 hours" and did nothing, which reads as a range
+  // that cannot be changed. It is a choice, so it is a choice on the screen.
+  const [hours, setHours] = useState(12);
 
   return (
     <>
       <PageHead
         title={t("c_title")}
         sub={t("c_sub")}
-        actions={<Btn icon="chev">{t("c_24")}</Btn>}
+        actions={
+          <div className="seg">
+            {RANGES.map(([key, points]) => (
+              <button
+                key={key}
+                className={hours === points ? "on" : undefined}
+                onClick={() => setHours(points)}
+              >
+                {t(key)}
+              </button>
+            ))}
+          </div>
+        }
       />
 
       <div className="grid g2">
-        {Object.entries(TRACES).map(([code, vals]) => {
+        {Object.entries(TRACES).map(([code, all]) => {
+          const vals = all.slice(-hours);
           const z = findZone(code);
           const dev = isDeviating(z);
           return (
@@ -67,7 +95,8 @@ const HubConditions = () => {
               />
 
               <div className="between t-xs muted-2" style={{ marginTop: 4 }}>
-                <span>{t("c_24")}</span>
+                {/* The range that is drawn, not a fixed caption. */}
+                <span>{t(RANGES.find(([, n]) => n === hours)?.[0] ?? "c_24")}</span>
                 {dev ? (
                   <Tag cls="p-crit">{t("z_dev")}</Tag>
                 ) : (

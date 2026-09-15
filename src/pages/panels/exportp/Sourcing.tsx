@@ -6,6 +6,8 @@
  * shows as reserved rather than offering a button that would fail.
  */
 
+import { useState } from "react";
+
 import { Btn, PageHead, Tag, Tbl } from "@/components/panel/primitives";
 import api from "@/lib/api";
 import { useAction } from "@/lib/panel-actions";
@@ -27,13 +29,33 @@ const ExportSourcing = () => {
     },
   );
   const available = LOTS.filter((l) => ["stored", "reserved"].includes(l.st));
+  // A buyer asks for one crop at a time, so that is what the filter narrows.
+  const [crop, setCrop] = useState("");
+  const crops = [...new Set(available.map((l) => l.p))];
+  const rows = crop ? available.filter((l) => l.p === crop) : available;
 
   return (
     <>
       <PageHead
         title={t("xs_title")}
         sub={t("xs_sub")}
-        actions={<Btn icon="chev">{t("filter")}</Btn>}
+        actions={
+          <select
+            className="inp"
+            style={{ width: 180 }}
+            value={crop}
+            onChange={(e) => setCrop(e.target.value)}
+          >
+            <option value="">
+              {t("filter")}: {t("all")}
+            </option>
+            {crops.map((c) => (
+              <option key={c} value={c}>
+                {pn(c)}
+              </option>
+            ))}
+          </select>
+        }
       />
       <Tbl
         min={980}
@@ -48,7 +70,7 @@ const ExportSourcing = () => {
           [""],
         ]}
       >
-        {available.map((l) => {
+        {rows.map((l) => {
           const z = findZone(l.z);
           const dl = daysLeft(l);
           return (

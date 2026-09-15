@@ -4,6 +4,7 @@
  * Narrow measure, no sidebar: the only job here is to be read.
  */
 
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import PanelIcon from "@/components/panel/icons";
@@ -20,6 +21,22 @@ const Article = () => {
   const n = id ? findArticle(id) : undefined;
 
   if (!n) return <NotFound />;
+
+  const [shared, setShared] = useState(false);
+  const share = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: t(`w_${n.id}t`), url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setShared(true);
+      setTimeout(() => setShared(false), 2500);
+    } catch {
+      // A reader who dismissed the share sheet has not hit an error.
+    }
+  };
 
   return (
     <>
@@ -50,7 +67,12 @@ const Article = () => {
           <div className="rule" />
 
           <div className="row" style={{ gap: 8 }}>
-            <SiteBtn sm>{t("w_nw_share")}</SiteBtn>
+            {/* The platform share sheet where there is one - a phone - and the
+                clipboard everywhere else, which is what a reader on a desktop
+                was going to do by hand anyway. */}
+            <SiteBtn sm onClick={() => void share()}>
+              {shared ? t("w_nw_copied") : t("w_nw_share")}
+            </SiteBtn>
             <SiteBtn sm cls="btn-q" to="/news" icon="arr">
               {t("w_nw_related")}
             </SiteBtn>

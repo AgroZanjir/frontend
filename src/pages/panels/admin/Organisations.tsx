@@ -116,7 +116,14 @@ const AdminOrganisations = () => {
               )}
             </td>
             <td className="r">
-              <Btn sm cls="btn-q">
+              <Btn
+                sm
+                cls="btn-q"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/admin/organisation?o=${o.c}`);
+                }}
+              >
                 {t("open")}
               </Btn>
             </td>
