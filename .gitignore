@@ -1,5 +1,6 @@
 node_modules/
 dist/
+.cache/
 .env.local
 *.local
 
@@ -16,3 +17,5 @@ dist/
 # `tsc -b`, and tracked here since the original import - which meant every
 # build produced a diff.
 *.tsbuildinfo
+
+.ruff_cache/

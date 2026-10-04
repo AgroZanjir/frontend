@@ -1,13 +1,16 @@
 /**
- * Runtime configuration.
+ * Public, build-time configuration.
  *
- * Everything deployment-specific comes from the environment; nothing about a
- * host belongs in the source. `Base_Url` used to be a constant in App.tsx
- * pointing at a production domain - that is what this replaces.
+ * Production uses the site's own origin. The edge routes /api/ to Django, so
+ * the same image works on every server without baking a hostname into it.
+ * .env.development supplies the local Django address when running Vite.
+ * Vite exposes these values to the browser; never put secrets here.
  */
 
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(
+  /\/+$/,
+  "",
+);
 
 /** Everything the platform serves lives under one versioned prefix. */
 export const API_V1 = `${API_BASE_URL}/api/v1`;

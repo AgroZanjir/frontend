@@ -1,0 +1,9 @@
+vulnerabilities:
+  - id: CVE-2026-93687
+    paths: [package-lock.json]
+    expired_at: 2026-11-04
+    statement: >-
+      Unpatched braces <=3.0.3 is used only by Tailwind 3 build tooling with fixed
+      developer-controlled globs. Node and these packages are absent from the
+      production nginx image. Reassess before expiry; migrate Tailwind or apply
+      an upstream fix when available. GHSA-vfj7-8cjw-p6xm.

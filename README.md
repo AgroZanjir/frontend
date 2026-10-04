@@ -6,7 +6,7 @@ that fork is listed at the bottom, and it is not much.
 ## Run it
 
 ```sh
-npm install
+npm ci
 npm run dev          # http://localhost:5173
 ```
 
@@ -25,6 +25,56 @@ endpoints from it and falls back to its shipped figures if it cannot:
 | `npm run typecheck` | `tsc -b` |
 | `npm test` | vitest |
 | `npm run api-types` | regenerate `src/lib/api-types.ts` from the backend's OpenAPI schema |
+
+## Production image
+
+Use Node 24 LTS locally and in CI. `package-lock.json` is the dependency source
+of truth; use `npm ci` for reproducible installs. Run `npm run typecheck`,
+`npm test`, and `npm run build` before publishing. The build command alone does
+not typecheck the application. TypeScript caches stay under `node_modules/.cache`.
+
+The multi-stage Dockerfile builds the bundle with Node, then copies only the
+static files into an unprivileged NGINX runtime. Both base images are pinned by
+digest; update the digest with the tag when updating a base image. The runtime
+runs as UID/GID `101:101`, listens on `8080`, and uses only `/tmp` for writes.
+It supports a read-only root filesystem and needs no Linux capabilities:
+
+```sh
+docker build -t agrozanjir-frontend:local .
+docker run --rm --read-only --cap-drop ALL \
+  --security-opt no-new-privileges:true \
+  --tmpfs /tmp:rw,noexec,nosuid,size=64m,mode=1777 \
+  -p 127.0.0.1:8080:8080 agrozanjir-frontend:local
+curl --fail http://127.0.0.1:8080/healthz
+```
+
+This local image check serves the website only. In production, the infra
+repository's edge proxy serves the public HTTPS origin, sends `/api/` to Django,
+and sends application pages to this container. `/admin` remains the application's
+administration panel; Django's administration lives at `/django-admin/`. The
+edge also owns Django static files, document/media routing, TLS and HTTP/3.
+The frontend returns 404 for backend paths if the edge routes them incorrectly.
+
+Production API requests use the relative URL `/api/v1`, so moving to a different
+hostname requires no frontend rebuild or runtime configuration. The Docker
+build excludes `.env*` files and explicitly clears `VITE_API_BASE_URL`.
+Development keeps the existing `.env.development` override; use
+`.env.development.local` for machine-specific changes. Vite variables are public,
+build-time values and must never contain secrets.
+
+NGINX serves React Router deep links, including `/admin`, through `index.html`.
+Hashed `/assets/` files get immutable caching, missing assets return 404, and
+HTML is revalidated so a deployment does not leave browsers on an old entry
+page. `/healthz` checks this static server; the deployment also checks the
+backend's database-aware health endpoint. The public home page alone is not a
+backend health check because it can render fallback figures.
+
+The frontend repository builds, scans and publishes its image, then updates its
+release file in `AgroZanjir/infra`. Only the infra repository accesses the VPS.
+Keep runtime secrets and server settings in the infra repository's `prod`
+environment. The frontend `prod` environment only needs the release automation's
+cross-repository credential; GHCR publishing uses this repository's
+`GITHUB_TOKEN`. See the infra README for the complete setup and deployment steps.
 
 ## The panels
 
@@ -264,6 +314,34 @@ Kept, and still worth keeping:
 - `components/ProtectedRoute.tsx` — the module guard; the panels have their own
   in `components/PanelGate.tsx`
 
+## CI and releases
+
+`.github/workflows/ci.yml` runs Gitleaks, Semgrep and Trivy source gates, tests,
+build/publish, Trivy image scan, infra update/deployment wait and GHCR cleanup.
+PRs build/scan without publishing. Main releases publish
+`ghcr.io/agrozanjir/frontend:frontend-<full-sha>-<run-id>-<attempt>` and deploy by digest.
+Production API URLs are relative: no frontend runtime secrets or environment rebuilds.
+
+Create `prod` with variable `INFRA_APP_ID` and secret `INFRA_APP_PRIVATE_KEY`.
+The GitHub App is installed on infra with Contents write and Actions read. Deploy
+updates only `apps/frontend/image.env` there and waits for the matching receipt.
+Runtime/server secrets belong only to infra/prod. Cleanup keeps the current/previous
+successful image manifest graphs and skips stale reruns. See
+[infra setup](https://github.com/AgroZanjir/infra/blob/main/README.md) for environments,
+private package access, bootstrap and operations.
+
+### Security exception requiring follow-up
+
+`.trivyignore.yaml` scopes **CVE-2026-93687 / GHSA-vfj7-8cjw-p6xm** to package-lock.json
+and expires **2026-11-04**. The [upstream advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)
+has no patched braces version. Tailwind 3 uses it only while building, with fixed
+developer-owned glob patterns; neither Node nor these dev dependencies exist in
+the nginx runtime image. Untrusted brace patterns can exhaust the build process's
+stack: do not allow user-provided patterns into build configuration. Reassess before
+expiry and migrate Tailwind or use an upstream patch. This exception never applies
+to the runtime image scan or other vulnerabilities. npm audit also reports moderate
+advisories requiring separate major-version migrations; those remain visible.
+
 ## The other two repositories
 
 This is one of three. They are deployed together and versioned apart:
@@ -272,4 +350,4 @@ This is one of three. They are deployed together and versioned apart:
 | --- | --- |
 | [AgroZanjir/backend](https://github.com/AgroZanjir/backend) | Django 6 + DRF: the lot registry, the event log, the six clusters and the ports |
 | [AgroZanjir/frontend](https://github.com/AgroZanjir/frontend) | Vite + React: the public website and the eight operator panels |
-| [AgroZanjir/infra](https://github.com/AgroZanjir/infra) | How the two are served: nginx, gunicorn, PostgreSQL, the deployment sequence |
+| [AgroZanjir/infra](https://github.com/AgroZanjir/infra) | Production Docker Compose, the Caddy edge, PostgreSQL, bootstrap and deployment workflows |
